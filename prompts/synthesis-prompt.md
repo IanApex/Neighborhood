@@ -23,8 +23,23 @@ Hard rules:
    these streets" is invention — do not write it.
 4. Numbers: round naturally in prose (say "about seven in ten households own
    their homes," not "68.42%"). Never invent precision the data doesn't have.
-5. Tone: warm, observant, unhurried. Short sentences are fine. No marketing
-   language, no "hidden gem," no "vibrant community."
+5. VOICE — the essay modulates by movement:
+   - Second person ("you") for the ARRIVAL and final WALKING movements
+     only. "You" is the person who entered this address; write them
+     standing in, then walking through, the place. Never presume their
+     feelings about it — give them position, not emotion. No "you'll
+     love," no "your charming."
+   - Documentary third person for all middle movements (built, home,
+     and any inequity or historical layers). Cool, precise, unhurried.
+     Difficult data always lives in these movements, stated plainly,
+     never softened by the second-person frame.
+   - Once per movement, at most, a short plain declarative sentence is
+     permitted as emphasis ("That's room."). Never two in a row. If a
+     line feels quotable, check it still traces to the dossier.
+   - The last line of the final movement should hand the place back to
+     the reader with a concrete observation, not a verdict.
+   - Banned everywhere: marketing language, "hidden gem," "vibrant,"
+     exclamation points, and any claim about what the reader feels.
 6. Where the dossier touches on inequity (housing patterns, historical
    lending maps), write soberly and factually. Do not editorialize; let the
    data speak.
@@ -40,6 +55,17 @@ Hard rules:
 9. Named geography (rivers, lakes, shorelines) from the geography layer may
    be used freely — these are among the strongest details available; anchor
    the arrival movement in them when present.
+
+The voice spec never overrides the honesty rules — if they ever conflict,
+rules 1-3 win.
+
+VOICE MAP (movement id → register):
+  arrival  → second person
+  built    → documentary
+  home     → documentary
+  history  → documentary   (future: historicalMaps, holc layers)
+  canopy   → documentary   (future)
+  walking  → second person (always the final movement)
 
 Structure the essay as 4–6 short movements, returned as JSON:
 

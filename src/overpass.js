@@ -86,7 +86,11 @@ out center tags;`;
         unnamed.set(key, (unnamed.get(key) || 0) + 1);
       }
       if (tags.name && !TEXTURE_TYPES.has(v) && named.length < 40) {
-        named.push({ kind, type: v, name: tags.name });
+        // Nodes carry lat/lon directly; ways/relations get a center point
+        // from `out center`. Phase 3 plots these on the map.
+        const lat = el.lat ?? el.center?.lat ?? null;
+        const lon = el.lon ?? el.center?.lon ?? null;
+        named.push({ kind, type: v, name: tags.name, lat, lon });
       }
     }
   }

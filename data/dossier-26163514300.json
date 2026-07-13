@@ -1,0 +1,526 @@
+{
+  "schemaVersion": "0.2.0",
+  "generatedAt": "2026-07-13T21:39:17.745Z",
+  "sources": {
+    "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
+    "demographics": "US Census Bureau ACS 5-year (2024)",
+    "amenities": "OpenStreetMap contributors, via Overpass API",
+    "geography": "OpenStreetMap contributors, via Overpass API"
+  },
+  "input": {
+    "coordinates": {
+      "lat": 42.3866,
+      "lon": -82.9962
+    }
+  },
+  "tractCore": {
+    "tract": {
+      "geoid": "26163514300",
+      "name": "Census Tract 5143",
+      "centroid": {
+        "lat": 42.3888617,
+        "lon": -82.9934056
+      },
+      "areaLandSqM": 2019117,
+      "areaWaterSqM": 0
+    },
+    "layers": {
+      "core": {
+        "tractName": "Census Tract 5143; Wayne County; Michigan",
+        "medianYearBuilt": 1938,
+        "population": 2319,
+        "tenure": {
+          "totalOccupied": 763,
+          "ownerOccupied": 421,
+          "renterOccupied": 342
+        }
+      },
+      "yearBuilt": {
+        "totalUnits": 1181,
+        "buckets": [
+          {
+            "variable": "B25034_011E",
+            "label": "Built 1939 or earlier",
+            "count": 697
+          },
+          {
+            "variable": "B25034_010E",
+            "label": "Built 1940 to 1949",
+            "count": 50
+          },
+          {
+            "variable": "B25034_009E",
+            "label": "Built 1950 to 1959",
+            "count": 233
+          },
+          {
+            "variable": "B25034_008E",
+            "label": "Built 1960 to 1969",
+            "count": 62
+          },
+          {
+            "variable": "B25034_007E",
+            "label": "Built 1970 to 1979",
+            "count": 0
+          },
+          {
+            "variable": "B25034_006E",
+            "label": "Built 1980 to 1989",
+            "count": 38
+          },
+          {
+            "variable": "B25034_005E",
+            "label": "Built 1990 to 1999",
+            "count": 8
+          },
+          {
+            "variable": "B25034_004E",
+            "label": "Built 2000 to 2009",
+            "count": 93
+          },
+          {
+            "variable": "B25034_003E",
+            "label": "Built 2010 to 2019",
+            "count": 0
+          },
+          {
+            "variable": "B25034_002E",
+            "label": "Built 2020 or later",
+            "count": 0
+          }
+        ]
+      },
+      "geography": {
+        "searchRadiusMeters": 1500,
+        "namedWaterways": [],
+        "namedWater": [],
+        "namedLandforms": []
+      },
+      "canopy": null,
+      "historicalMaps": null,
+      "holc": null
+    }
+  },
+  "addressContext": {
+    "anchor": {
+      "lat": 42.3866,
+      "lon": -82.9962,
+      "source": "input-point"
+    },
+    "amenities": {
+      "walkRadiusMeters": 1200,
+      "totalFeatures": 126,
+      "counts": {
+        "amenity": {
+          "fuel": {
+            "count": 7
+          },
+          "fast_food": {
+            "count": 3
+          },
+          "events_venue": {
+            "count": 1
+          },
+          "restaurant": {
+            "count": 1
+          },
+          "kindergarten": {
+            "count": 2
+          },
+          "pharmacy": {
+            "count": 1
+          },
+          "fire_station": {
+            "count": 2
+          },
+          "parking": {
+            "count": 42,
+            "texture": true
+          },
+          "place_of_worship": {
+            "count": 24
+          },
+          "school": {
+            "count": 4
+          },
+          "social_facility": {
+            "count": 2
+          },
+          "college": {
+            "count": 1
+          }
+        },
+        "leisure": {
+          "park": {
+            "count": 7
+          },
+          "sports_centre": {
+            "count": 4
+          },
+          "playground": {
+            "count": 1
+          }
+        },
+        "shop": {
+          "bakery": {
+            "count": 1
+          },
+          "convenience": {
+            "count": 7
+          },
+          "supermarket": {
+            "count": 2
+          },
+          "cannabis": {
+            "count": 1
+          },
+          "alcohol": {
+            "count": 3
+          },
+          "beauty": {
+            "count": 1
+          },
+          "mobile_phone": {
+            "count": 2
+          },
+          "clothes": {
+            "count": 1
+          },
+          "deli": {
+            "count": 1
+          },
+          "fashion_accessories": {
+            "count": 1
+          },
+          "hairdresser": {
+            "count": 1
+          },
+          "car": {
+            "count": 2
+          },
+          "wholesale": {
+            "count": 1
+          }
+        }
+      },
+      "raw": {
+        "amenity": {
+          "fuel": 7,
+          "fast_food": 3,
+          "events_venue": 1,
+          "restaurant": 1,
+          "kindergarten": 2,
+          "pharmacy": 1,
+          "fire_station": 2,
+          "parking": 42,
+          "place_of_worship": 24,
+          "school": 4,
+          "social_facility": 2,
+          "college": 1
+        },
+        "leisure": {
+          "park": 7,
+          "sports_centre": 4,
+          "playground": 1
+        },
+        "shop": {
+          "bakery": 1,
+          "convenience": 7,
+          "supermarket": 2,
+          "cannabis": 1,
+          "alcohol": 3,
+          "beauty": 1,
+          "mobile_phone": 2,
+          "clothes": 1,
+          "deli": 1,
+          "fashion_accessories": 1,
+          "hairdresser": 1,
+          "car": 2,
+          "wholesale": 1
+        }
+      },
+      "namedExamples": [
+        {
+          "kind": "shop",
+          "type": "bakery",
+          "name": "On the Rise Bakery & Cafe",
+          "lat": 42.3874074,
+          "lon": -83.0087206
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Louis' Convenience Store",
+          "lat": 42.389342,
+          "lon": -83.0041838
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Citgo",
+          "lat": 42.3898854,
+          "lon": -83.0070382
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Mobil",
+          "lat": 42.3917535,
+          "lon": -82.9951523
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Mobil Mart",
+          "lat": 42.3917495,
+          "lon": -82.9949082
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "76",
+          "lat": 42.3946545,
+          "lon": -83.0038293
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "76",
+          "lat": 42.3948392,
+          "lon": -83.0037193
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Amoco",
+          "lat": 42.3927211,
+          "lon": -83.0062205
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Amoco",
+          "lat": 42.3927707,
+          "lon": -83.0060079
+        },
+        {
+          "kind": "amenity",
+          "type": "fast_food",
+          "name": "Captain Jay's Fish & Chicken",
+          "lat": 42.3924062,
+          "lon": -83.0052844
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Citgo",
+          "lat": 42.3897002,
+          "lon": -83.0071284
+        },
+        {
+          "kind": "shop",
+          "type": "supermarket",
+          "name": "Wonder Foods Supermarket",
+          "lat": 42.3892455,
+          "lon": -82.9964894
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Mobil",
+          "lat": 42.3823001,
+          "lon": -82.9963198
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Mobil Mart",
+          "lat": 42.3821634,
+          "lon": -82.9962346
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Sunoco",
+          "lat": 42.3824458,
+          "lon": -82.9972833
+        },
+        {
+          "kind": "shop",
+          "type": "convenience",
+          "name": "Sunoco",
+          "lat": 42.3826018,
+          "lon": -82.9973893
+        },
+        {
+          "kind": "amenity",
+          "type": "events_venue",
+          "name": "Right Choice Hall Rental",
+          "lat": 42.3889274,
+          "lon": -83.008422
+        },
+        {
+          "kind": "shop",
+          "type": "cannabis",
+          "name": "Green Acres Wellness Center",
+          "lat": 42.3879099,
+          "lon": -82.9827681
+        },
+        {
+          "kind": "shop",
+          "type": "alcohol",
+          "name": "Harding Market",
+          "lat": 42.3842014,
+          "lon": -82.992466
+        },
+        {
+          "kind": "shop",
+          "type": "alcohol",
+          "name": "Prince Liquor",
+          "lat": 42.3939616,
+          "lon": -83.0050235
+        },
+        {
+          "kind": "amenity",
+          "type": "fast_food",
+          "name": "Hollywood Coney Island",
+          "lat": 42.3937168,
+          "lon": -83.0054262
+        },
+        {
+          "kind": "shop",
+          "type": "supermarket",
+          "name": "Farmer John Food Center",
+          "lat": 42.3934506,
+          "lon": -83.0064357
+        },
+        {
+          "kind": "shop",
+          "type": "beauty",
+          "name": "Eboni Beauty Supply",
+          "lat": 42.3935314,
+          "lon": -83.0061729
+        },
+        {
+          "kind": "shop",
+          "type": "mobile_phone",
+          "name": "Metro by T-Mobile",
+          "lat": 42.3935703,
+          "lon": -83.005925
+        },
+        {
+          "kind": "shop",
+          "type": "mobile_phone",
+          "name": "Cricket Wireless",
+          "lat": 42.3935543,
+          "lon": -83.0060366
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Rock City Eats & Sweets",
+          "lat": 42.3933896,
+          "lon": -83.0067987
+        },
+        {
+          "kind": "amenity",
+          "type": "kindergarten",
+          "name": "United Children & Family Head Start",
+          "lat": 42.3934331,
+          "lon": -83.0072015
+        },
+        {
+          "kind": "shop",
+          "type": "clothes",
+          "name": "OMG WEAR",
+          "lat": 42.3935635,
+          "lon": -83.0059836
+        },
+        {
+          "kind": "amenity",
+          "type": "pharmacy",
+          "name": "St. Paul Discount Pharmacy",
+          "lat": 42.3930108,
+          "lon": -83.0046538
+        },
+        {
+          "kind": "shop",
+          "type": "deli",
+          "name": "Target Meats",
+          "lat": 42.3831085,
+          "lon": -83.0021236
+        },
+        {
+          "kind": "shop",
+          "type": "alcohol",
+          "name": "Super Giant Liquor",
+          "lat": 42.3862527,
+          "lon": -83.0092143
+        },
+        {
+          "kind": "shop",
+          "type": "fashion_accessories",
+          "name": "Hats Galore & More",
+          "lat": 42.3950068,
+          "lon": -83.0042659
+        },
+        {
+          "kind": "amenity",
+          "type": "fast_food",
+          "name": "Home Style Coney Island Restaurant",
+          "lat": 42.3800919,
+          "lon": -82.9950918
+        },
+        {
+          "kind": "shop",
+          "type": "hairdresser",
+          "name": "6 Barbers",
+          "lat": 42.3802174,
+          "lon": -82.9951927
+        },
+        {
+          "kind": "amenity",
+          "type": "fire_station",
+          "name": "Squad 6 Medic 13",
+          "lat": 42.3896906,
+          "lon": -82.994327
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Connor Playfield",
+          "lat": 42.3999836,
+          "lon": -82.9930373
+        },
+        {
+          "kind": "amenity",
+          "type": "place_of_worship",
+          "name": "Divine Deliverance Outreach Ministries",
+          "lat": 42.3832417,
+          "lon": -83.0094129
+        },
+        {
+          "kind": "amenity",
+          "type": "fire_station",
+          "name": "Engine Number 41 Fire Station",
+          "lat": 42.3799449,
+          "lon": -83.0032181
+        },
+        {
+          "kind": "amenity",
+          "type": "place_of_worship",
+          "name": "Wayside Missionary Baptist Church",
+          "lat": 42.3796094,
+          "lon": -83.0029576
+        },
+        {
+          "kind": "amenity",
+          "type": "place_of_worship",
+          "name": "Christian Faith Tabernacle Church",
+          "lat": 42.3786997,
+          "lon": -82.9984648
+        }
+      ]
+    }
+  }
+}

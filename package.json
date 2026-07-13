@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": ">=18" },
   "scripts": {
-    "dossier": "node --env-file=.env src/assemble.js"
+    "dossier": "node --env-file=.env src/assemble.js",
+    "synthesis-view": "node src/dossier-view.js"
   }
 }

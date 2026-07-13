@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.2.0",
-  "generatedAt": "2026-07-13T20:58:44.566Z",
+  "generatedAt": "2026-07-13T21:48:13.442Z",
   "sources": {
     "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
@@ -500,202 +500,282 @@
         {
           "kind": "amenity",
           "type": "social_centre",
-          "name": "Columbia Yacht Club"
+          "name": "Columbia Yacht Club",
+          "lat": 41.8839496,
+          "lon": -87.6125335
         },
         {
           "kind": "amenity",
           "type": "library",
-          "name": "Northwestern University Law Library"
+          "name": "Northwestern University Law Library",
+          "lat": 41.8965181,
+          "lon": -87.6173152
         },
         {
           "kind": "amenity",
           "type": "bicycle_rental",
-          "name": "McClurg Ct & Ohio St"
+          "name": "McClurg Ct & Ohio St",
+          "lat": 41.8925647,
+          "lon": -87.6173481
         },
         {
           "kind": "shop",
           "type": "supermarket",
-          "name": "Mariano's Fresh Market"
+          "name": "Mariano's Fresh Market",
+          "lat": 41.8854048,
+          "lon": -87.6189659
         },
         {
           "kind": "amenity",
           "type": "pharmacy",
-          "name": "CVS Pharmacy"
+          "name": "CVS Pharmacy",
+          "lat": 41.885957,
+          "lon": -87.6203315
         },
         {
           "kind": "shop",
           "type": "chemist",
-          "name": "CVS Pharmacy"
+          "name": "CVS Pharmacy",
+          "lat": 41.885957,
+          "lon": -87.6203315
         },
         {
           "kind": "amenity",
           "type": "bank",
-          "name": "First American Bank"
+          "name": "First American Bank",
+          "lat": 41.8932361,
+          "lon": -87.6199288
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Chipotle"
+          "name": "Chipotle",
+          "lat": 41.8932428,
+          "lon": -87.6205733
         },
         {
           "kind": "amenity",
           "type": "pub",
-          "name": "Harry Caray's Tavern"
+          "name": "Harry Caray's Tavern",
+          "lat": 41.8914624,
+          "lon": -87.6094084
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "McDonald's"
+          "name": "McDonald's",
+          "lat": 41.8915774,
+          "lon": -87.6087562
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Panera Bread"
+          "name": "Panera Bread",
+          "lat": 41.8945771,
+          "lon": -87.6221092
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Timothy O’Toole’s Pub"
+          "name": "Timothy O’Toole’s Pub",
+          "lat": 41.8932428,
+          "lon": -87.6204681
         },
         {
           "kind": "amenity",
           "type": "cinema",
-          "name": "AMC River East 21"
+          "name": "AMC River East 21",
+          "lat": 41.8914092,
+          "lon": -87.6187573
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Eggy's"
+          "name": "Eggy's",
+          "lat": 41.8854088,
+          "lon": -87.6188393
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Caffè Oliva"
+          "name": "Caffè Oliva",
+          "lat": 41.893123,
+          "lon": -87.6128059
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Caffè Oliva concession"
+          "name": "Caffè Oliva concession",
+          "lat": 41.8930319,
+          "lon": -87.6136282
         },
         {
           "kind": "amenity",
           "type": "bicycle_rental",
-          "name": "Fairbanks Ct & Grand Ave"
+          "name": "Fairbanks Ct & Grand Ave",
+          "lat": 41.89186,
+          "lon": -87.62062
         },
         {
           "kind": "amenity",
           "type": "locker",
-          "name": "Beach Lockers"
+          "name": "Beach Lockers",
+          "lat": 41.893134,
+          "lon": -87.613781
         },
         {
           "kind": "amenity",
           "type": "bicycle_rental",
-          "name": "Cityfront Plaza Dr & Pioneer Ct"
+          "name": "Cityfront Plaza Dr & Pioneer Ct",
+          "lat": 41.8904391,
+          "lon": -87.6220768
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Yolk"
+          "name": "Yolk",
+          "lat": 41.8921642,
+          "lon": -87.6180984
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Starbucks"
+          "name": "Starbucks",
+          "lat": 41.8939959,
+          "lon": -87.622591
         },
         {
           "kind": "shop",
           "type": "convenience",
-          "name": "7-Eleven"
+          "name": "7-Eleven",
+          "lat": 41.8924038,
+          "lon": -87.6225322
         },
         {
           "kind": "shop",
           "type": "supermarket",
-          "name": "Whole Foods Market"
+          "name": "Whole Foods Market",
+          "lat": 41.8916289,
+          "lon": -87.6205013
         },
         {
           "kind": "shop",
           "type": "gift",
-          "name": "Navy Pier Store"
+          "name": "Navy Pier Store",
+          "lat": 41.8918294,
+          "lon": -87.6085594
         },
         {
           "kind": "amenity",
           "type": "bar",
-          "name": "Margaritaville"
+          "name": "Margaritaville",
+          "lat": 41.8913274,
+          "lon": -87.6085962
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Indian Garden"
+          "name": "Indian Garden",
+          "lat": 41.8932431,
+          "lon": -87.6208409
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Dollop Coffee"
+          "name": "Dollop Coffee",
+          "lat": 41.8924751,
+          "lon": -87.6187471
         },
         {
           "kind": "amenity",
           "type": "post_office",
-          "name": "Streeterville Post Office"
+          "name": "Streeterville Post Office",
+          "lat": 41.8924728,
+          "lon": -87.6179487
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Dunkin'"
+          "name": "Dunkin'",
+          "lat": 41.8964784,
+          "lon": -87.6209309
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Potbelly"
+          "name": "Potbelly",
+          "lat": 41.893264,
+          "lon": -87.6207083
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Dao"
+          "name": "Dao",
+          "lat": 41.8927469,
+          "lon": -87.6215023
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Gyu-Kaku"
+          "name": "Gyu-Kaku",
+          "lat": 41.8927269,
+          "lon": -87.6222426
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Burrito Beach"
+          "name": "Burrito Beach",
+          "lat": 41.892699,
+          "lon": -87.6224893
         },
         {
           "kind": "shop",
           "type": "convenience",
-          "name": "7-Eleven"
+          "name": "7-Eleven",
+          "lat": 41.8932528,
+          "lon": -87.6178958
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Starbucks"
+          "name": "Starbucks",
+          "lat": 41.8933007,
+          "lon": -87.6175766
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Robert's Pizza Company"
+          "name": "Robert's Pizza Company",
+          "lat": 41.8906336,
+          "lon": -87.617051
         },
         {
           "kind": "amenity",
           "type": "studio",
-          "name": "Univision Chicago"
+          "name": "Univision Chicago",
+          "lat": 41.8919824,
+          "lon": -87.6198226
         },
         {
           "kind": "amenity",
           "type": "pub",
-          "name": "Billy Goat Tavern"
+          "name": "Billy Goat Tavern",
+          "lat": 41.8913893,
+          "lon": -87.6044701
         },
         {
           "kind": "amenity",
           "type": "bank",
-          "name": "Chase"
+          "name": "Chase",
+          "lat": 41.8908998,
+          "lon": -87.6179741
         },
         {
           "kind": "shop",
           "type": "wine",
-          "name": "Uncork It!"
+          "name": "Uncork It!",
+          "lat": 41.8909038,
+          "lon": -87.6182665
         }
       ]
     }

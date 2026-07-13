@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.2.0",
-  "generatedAt": "2026-07-13T20:44:13.788Z",
+  "generatedAt": "2026-07-13T21:48:09.573Z",
   "sources": {
     "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
@@ -303,202 +303,282 @@
         {
           "kind": "amenity",
           "type": "post_office",
-          "name": "De Pere Post Office"
+          "name": "De Pere Post Office",
+          "lat": 44.4488805,
+          "lon": -88.0592695
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Legion Park"
+          "name": "Legion Park",
+          "lat": 44.446704,
+          "lon": -88.0502854
         },
         {
           "kind": "amenity",
           "type": "library",
-          "name": "De Pere Branch Brown County Library"
+          "name": "De Pere Branch Brown County Library",
+          "lat": 44.4477692,
+          "lon": -88.0703807
         },
         {
           "kind": "amenity",
           "type": "theatre",
-          "name": "Walter Theatre"
+          "name": "Walter Theatre",
+          "lat": 44.4444754,
+          "lon": -88.0676189
         },
         {
           "kind": "amenity",
           "type": "theatre",
-          "name": "Webb Theatre"
+          "name": "Webb Theatre",
+          "lat": 44.4445251,
+          "lon": -88.0681607
         },
         {
           "kind": "amenity",
           "type": "fire_station",
-          "name": "De Pere Fire Dept, Station 1"
+          "name": "De Pere Fire Dept, Station 1",
+          "lat": 44.4463371,
+          "lon": -88.0600503
         },
         {
           "kind": "amenity",
           "type": "townhall",
-          "name": "De Pere City Hall"
+          "name": "De Pere City Hall",
+          "lat": 44.4456729,
+          "lon": -88.0599271
         },
         {
           "kind": "amenity",
           "type": "bar",
-          "name": "Shaker's Bar"
+          "name": "Shaker's Bar",
+          "lat": 44.447612,
+          "lon": -88.0693673
         },
         {
           "kind": "amenity",
           "type": "fuel",
-          "name": "Shell"
+          "name": "Shell",
+          "lat": 44.4396074,
+          "lon": -88.0599881
         },
         {
           "kind": "amenity",
           "type": "fast_food",
-          "name": "Taco Bell"
+          "name": "Taco Bell",
+          "lat": 44.4399659,
+          "lon": -88.0601136
         },
         {
           "kind": "shop",
           "type": "bakery",
-          "name": "Great Harvest Bread Co."
+          "name": "Great Harvest Bread Co.",
+          "lat": 44.4486144,
+          "lon": -88.0552971
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Luna Coffee Roasters"
+          "name": "Luna Coffee Roasters",
+          "lat": 44.4475688,
+          "lon": -88.0691428
         },
         {
           "kind": "amenity",
           "type": "nightclub",
-          "name": "The Green Room"
+          "name": "The Green Room",
+          "lat": 44.4473836,
+          "lon": -88.0700299
         },
         {
           "kind": "amenity",
           "type": "childcare",
-          "name": "St. Norbert College Children's Center"
+          "name": "St. Norbert College Children's Center",
+          "lat": 44.4429521,
+          "lon": -88.0666454
         },
         {
           "kind": "amenity",
           "type": "place_of_worship",
-          "name": "Sensenbrenner's Blessed Sacrament Chapel"
+          "name": "Sensenbrenner's Blessed Sacrament Chapel",
+          "lat": 44.4428572,
+          "lon": -88.067175
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Ruth's Marketplace"
+          "name": "Ruth's Marketplace",
+          "lat": 44.4435373,
+          "lon": -88.0678671
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Dale's Sports Lounge"
+          "name": "Dale's Sports Lounge",
+          "lat": 44.4437043,
+          "lon": -88.0676687
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Phil's"
+          "name": "Phil's",
+          "lat": 44.4434612,
+          "lon": -88.0655091
         },
         {
           "kind": "leisure",
           "type": "sports_centre",
-          "name": "Van Dyke Gym"
+          "name": "Van Dyke Gym",
+          "lat": 44.4432858,
+          "lon": -88.0658008
         },
         {
           "kind": "amenity",
           "type": "bank",
-          "name": "Capital Credit Union"
+          "name": "Capital Credit Union",
+          "lat": 44.4474171,
+          "lon": -88.073824
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Smoked to the Bone"
+          "name": "Smoked to the Bone",
+          "lat": 44.4472358,
+          "lon": -88.0703232
         },
         {
           "kind": "amenity",
           "type": "theatre",
-          "name": "ComedyCity De Pere"
+          "name": "ComedyCity De Pere",
+          "lat": 44.4471629,
+          "lon": -88.0700673
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Nuk's Thai Cuisine"
+          "name": "Nuk's Thai Cuisine",
+          "lat": 44.4502617,
+          "lon": -88.0619696
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Ed’s Coffee Shop"
+          "name": "Ed’s Coffee Shop",
+          "lat": 44.4441104,
+          "lon": -88.0691442
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Black Honey Hashery"
+          "name": "Black Honey Hashery",
+          "lat": 44.4386901,
+          "lon": -88.0604207
         },
         {
           "kind": "shop",
           "type": "beauty",
-          "name": "Bright Esthetics, LLC"
+          "name": "Bright Esthetics, LLC",
+          "lat": 44.4492094,
+          "lon": -88.0590267
         },
         {
           "kind": "amenity",
           "type": "restaurant",
-          "name": "Savour on Broadway"
+          "name": "Savour on Broadway",
+          "lat": 44.4471083,
+          "lon": -88.0597956
         },
         {
           "kind": "amenity",
           "type": "cafe",
-          "name": "Café on Broadway"
+          "name": "Café on Broadway",
+          "lat": 44.4470827,
+          "lon": -88.0596521
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Voyageur Park"
+          "name": "Voyageur Park",
+          "lat": 44.4527108,
+          "lon": -88.0634667
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "VFW Park"
+          "name": "VFW Park",
+          "lat": 44.4463584,
+          "lon": -88.0782758
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Optimist Park"
+          "name": "Optimist Park",
+          "lat": 44.4393141,
+          "lon": -88.0573812
         },
         {
           "kind": "amenity",
           "type": "school",
-          "name": "Foxview Intermediate School"
+          "name": "Foxview Intermediate School",
+          "lat": 44.4440894,
+          "lon": -88.059355
         },
         {
           "kind": "amenity",
           "type": "school",
-          "name": "De Pere High School"
+          "name": "De Pere High School",
+          "lat": 44.4408701,
+          "lon": -88.0445731
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Wilcox Park"
+          "name": "Wilcox Park",
+          "lat": 44.4388305,
+          "lon": -88.062571
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Braisher Park"
+          "name": "Braisher Park",
+          "lat": 44.4518005,
+          "lon": -88.0490651
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "George Park"
+          "name": "George Park",
+          "lat": 44.4490204,
+          "lon": -88.0478633
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Rusk Park"
+          "name": "Rusk Park",
+          "lat": 44.4487089,
+          "lon": -88.0457775
         },
         {
           "kind": "amenity",
           "type": "school",
-          "name": "Notre Dame Elementary School"
+          "name": "Notre Dame Elementary School",
+          "lat": 44.4483145,
+          "lon": -88.05623
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Bicentennial Park"
+          "name": "Bicentennial Park",
+          "lat": 44.4475064,
+          "lon": -88.0756184
         },
         {
           "kind": "leisure",
           "type": "park",
-          "name": "Lawton Park"
+          "name": "Lawton Park",
+          "lat": 44.4490348,
+          "lon": -88.0754412
         }
       ]
     }

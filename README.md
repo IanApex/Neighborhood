@@ -18,7 +18,27 @@ node --env-file=.env src/assemble.js --coords 41.8917 -87.6086
 
 (`--env-file` needs Node 20+; on older Node, export the vars yourself.)
 
-Output lands in `data/dossier-<GEOID>.json`.
+Output lands in `data/dossier-<GEOID>.json`. To print the trimmed synthesis
+view of a dossier (what goes into the narrative prompt — no raw counts or
+map geometry):
+
+```
+npm run synthesis-view data/dossier-<GEOID>.json
+```
+
+## Reference tracts
+
+| GEOID | Place | Tests |
+|---|---|---|
+| 55009010300 | De Pere, WI | small-city baseline |
+| 17031081402 | Chicago (Streeterville) | dense-urban contrast |
+| 26163514300 | Detroit (east side) | hard-profile voice test |
+
+The Detroit tract was chosen data-first from four rust-belt candidates: its
+dossier shows 1938 median year built, 83% of units pre-1960, ~35% of units
+unoccupied, sparse walkable amenities, and an empty named-geography layer —
+the hardest test of the essay's honesty and voice rules. Selection rationale
+is documented in CLAUDE.md.
 
 ## What's in a dossier (v0.2)
 
@@ -59,6 +79,7 @@ Split into two parts so the GEOID cache key stays honest:
 
 ## Definition of done for this spike
 
-Two committed dossiers — one De Pere tract, one dense urban tract — that a
-human can read top to bottom and say: "yes, there's an essay in here."
-Then phase 2 (narrative engine) starts from `prompts/synthesis-prompt.md`.
+~~Two~~ Three committed dossiers (see Reference tracts) that a human can
+read top to bottom and say: "yes, there's an essay in here." Phase 1 closed
+2026-07-13. Phase 2 (narrative voice) lives in `prompts/synthesis-prompt.md`;
+essay runs happen conversationally for now.

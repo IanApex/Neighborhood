@@ -54,12 +54,34 @@ The dossier is split to keep the GEOID cache key honest:
   check licensing on Sanborn sheets and Mapping Inequality data before
   publishing any overlay
 
+## Reference tracts
+
+Three committed dossiers, each testing something different:
+
+1. **55009010300** — De Pere WI (335 S Broadway): small-city baseline
+2. **17031081402** — Chicago Streeterville: dense-urban contrast
+3. **26163514300** — Detroit east side, tract 5143: hard-profile voice test
+
+The hard tract was selected data-first from four candidates (Detroit east
+side, Cleveland Hough, Gary Midtown, North St. Louis) by comparing dossiers,
+not reputations. Detroit 5143 qualified on the most simultaneous signals
+(2024 ACS 5-year / OSM as of 2026-07-13):
+
+- Median year built 1938; 83% of units pre-1960; 8% built since 2000
+- ~35% of housing units not occupied (1,181 units, 763 occupied households)
+- 126 walkable features vs 216 (small-city ref) and 1,083 (dense-urban ref)
+- Named geography layer came back empty — valid, and the starkest test of
+  rule 2 (write the shape of what IS visible; no compensation)
+
+North St. Louis (29510127700) had higher vacancy (~44%) but also 366
+amenities and a named lake — a softer test of the arrival/walking movements.
+
 ## Conventions
 
 - Each data layer fetcher lives in its own module in `src/` and may fail
   independently; the assembler uses Promise.allSettled and writes a dossier
   with gaps rather than failing the whole run
 - Dossiers are written to `data/dossier-<GEOID>.json` and are committed for
-  the two reference tracts (they're the spike's actual deliverable)
+  the three reference tracts (see "Reference tracts" above)
 - ACS sentinel values (large negatives like -666666666) must be nulled, not
   passed through
