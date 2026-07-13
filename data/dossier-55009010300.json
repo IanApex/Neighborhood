@@ -1,0 +1,347 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedAt": "2026-07-13T20:03:53.797Z",
+  "sources": {
+    "geography": "US Census Bureau Geocoder (Public_AR_Current)",
+    "demographics": "US Census Bureau ACS 5-year (2024)",
+    "amenities": "OpenStreetMap contributors, via Overpass API"
+  },
+  "input": {
+    "matchedAddress": "335 S BROADWAY, DE PERE, WI, 54115"
+  },
+  "tract": {
+    "geoid": "55009010300",
+    "name": "Census Tract 103",
+    "centroid": {
+      "lat": 44.4155364,
+      "lon": -88.0374622
+    },
+    "areaLandSqM": "19256092",
+    "areaWaterSqM": "604755"
+  },
+  "layers": {
+    "core": {
+      "tractName": "Census Tract 103; Brown County; Wisconsin",
+      "medianYearBuilt": 1988,
+      "population": 7319,
+      "tenure": {
+        "totalOccupied": 3429,
+        "ownerOccupied": 2201,
+        "renterOccupied": 1228
+      }
+    },
+    "yearBuilt": {
+      "totalUnits": 3556,
+      "buckets": [
+        {
+          "variable": "B25034_011E",
+          "label": "Built 1939 or earlier",
+          "count": 349
+        },
+        {
+          "variable": "B25034_010E",
+          "label": "Built 1940 to 1949",
+          "count": 59
+        },
+        {
+          "variable": "B25034_009E",
+          "label": "Built 1950 to 1959",
+          "count": 230
+        },
+        {
+          "variable": "B25034_008E",
+          "label": "Built 1960 to 1969",
+          "count": 378
+        },
+        {
+          "variable": "B25034_007E",
+          "label": "Built 1970 to 1979",
+          "count": 390
+        },
+        {
+          "variable": "B25034_006E",
+          "label": "Built 1980 to 1989",
+          "count": 487
+        },
+        {
+          "variable": "B25034_005E",
+          "label": "Built 1990 to 1999",
+          "count": 444
+        },
+        {
+          "variable": "B25034_004E",
+          "label": "Built 2000 to 2009",
+          "count": 856
+        },
+        {
+          "variable": "B25034_003E",
+          "label": "Built 2010 to 2019",
+          "count": 253
+        },
+        {
+          "variable": "B25034_002E",
+          "label": "Built 2020 or later",
+          "count": 110
+        }
+      ]
+    },
+    "amenities": {
+      "anchor": {
+        "lat": 44.446183879856,
+        "lon": -88.060464268054,
+        "source": "input-point"
+      },
+      "walkRadiusMeters": 1200,
+      "totalFeatures": 216,
+      "counts": {
+        "amenity": {
+          "post_office": 1,
+          "library": 3,
+          "theatre": 5,
+          "fire_station": 1,
+          "townhall": 1,
+          "bar": 2,
+          "fuel": 4,
+          "fast_food": 1,
+          "bench": 4,
+          "cafe": 4,
+          "nightclub": 1,
+          "parking_entrance": 5,
+          "parking": 94,
+          "childcare": 1,
+          "place_of_worship": 5,
+          "restaurant": 8,
+          "bank": 3,
+          "school": 4,
+          "shelter": 6,
+          "toilets": 4,
+          "university": 2,
+          "events_venue": 1,
+          "cinema": 1,
+          "pub": 1,
+          "arts_centre": 2,
+          "car_wash": 1,
+          "community_centre": 1
+        },
+        "leisure": {
+          "park": 16,
+          "playground": 8,
+          "pitch": 15,
+          "sports_centre": 3
+        },
+        "shop": {
+          "bakery": 1,
+          "books": 1,
+          "beauty": 1,
+          "chemist": 1,
+          "convenience": 4
+        }
+      },
+      "namedExamples": [
+        {
+          "kind": "amenity",
+          "type": "post_office",
+          "name": "De Pere Post Office"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Legion Park"
+        },
+        {
+          "kind": "amenity",
+          "type": "library",
+          "name": "De Pere Branch Brown County Library"
+        },
+        {
+          "kind": "amenity",
+          "type": "theatre",
+          "name": "Walter Theatre"
+        },
+        {
+          "kind": "amenity",
+          "type": "theatre",
+          "name": "Webb Theatre"
+        },
+        {
+          "kind": "amenity",
+          "type": "fire_station",
+          "name": "De Pere Fire Dept, Station 1"
+        },
+        {
+          "kind": "amenity",
+          "type": "townhall",
+          "name": "De Pere City Hall"
+        },
+        {
+          "kind": "amenity",
+          "type": "bar",
+          "name": "Shaker's Bar"
+        },
+        {
+          "kind": "amenity",
+          "type": "fuel",
+          "name": "Shell"
+        },
+        {
+          "kind": "amenity",
+          "type": "fast_food",
+          "name": "Taco Bell"
+        },
+        {
+          "kind": "shop",
+          "type": "bakery",
+          "name": "Great Harvest Bread Co."
+        },
+        {
+          "kind": "amenity",
+          "type": "cafe",
+          "name": "Luna Coffee Roasters"
+        },
+        {
+          "kind": "amenity",
+          "type": "nightclub",
+          "name": "The Green Room"
+        },
+        {
+          "kind": "amenity",
+          "type": "childcare",
+          "name": "St. Norbert College Children's Center"
+        },
+        {
+          "kind": "amenity",
+          "type": "place_of_worship",
+          "name": "Sensenbrenner's Blessed Sacrament Chapel"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Ruth's Marketplace"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Dale's Sports Lounge"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Phil's"
+        },
+        {
+          "kind": "leisure",
+          "type": "sports_centre",
+          "name": "Van Dyke Gym"
+        },
+        {
+          "kind": "amenity",
+          "type": "bank",
+          "name": "Capital Credit Union"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Smoked to the Bone"
+        },
+        {
+          "kind": "amenity",
+          "type": "theatre",
+          "name": "ComedyCity De Pere"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Nuk's Thai Cuisine"
+        },
+        {
+          "kind": "amenity",
+          "type": "cafe",
+          "name": "Ed’s Coffee Shop"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Black Honey Hashery"
+        },
+        {
+          "kind": "shop",
+          "type": "beauty",
+          "name": "Bright Esthetics, LLC"
+        },
+        {
+          "kind": "amenity",
+          "type": "restaurant",
+          "name": "Savour on Broadway"
+        },
+        {
+          "kind": "amenity",
+          "type": "cafe",
+          "name": "Café on Broadway"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Voyageur Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "VFW Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Optimist Park"
+        },
+        {
+          "kind": "amenity",
+          "type": "school",
+          "name": "Foxview Intermediate School"
+        },
+        {
+          "kind": "amenity",
+          "type": "school",
+          "name": "De Pere High School"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Wilcox Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Braisher Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "George Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Rusk Park"
+        },
+        {
+          "kind": "amenity",
+          "type": "school",
+          "name": "Notre Dame Elementary School"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Bicentennial Park"
+        },
+        {
+          "kind": "leisure",
+          "type": "park",
+          "name": "Lawton Park"
+        }
+      ]
+    },
+    "canopy": null,
+    "historicalMaps": null,
+    "holc": null
+  }
+}
