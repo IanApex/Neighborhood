@@ -8,11 +8,21 @@
 //
 // The dossier is the contract for the whole project: the narrative layer is
 // only ever allowed to state facts that exist in this file.
+//
+// v0.2.0 splits the dossier in two:
+//   tractCore      — everything that is purely a function of the tract.
+//                    Cacheable by GEOID: two requests in the same tract get
+//                    byte-identical tractCore.
+//   addressContext — the walking-distance amenities layer, anchored at the
+//                    input point and regenerated per request. Kept out of
+//                    tractCore so the GEOID cache key stays honest (same
+//                    tract, different address = different walkshed).
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { tractFromAddress, tractFromCoordinates } from './geocode.js';
 import { fetchCoreStats, fetchYearBuiltDistribution } from './acs.js';
 import { fetchAmenities } from './overpass.js';
+import { fetchGeography } from './geography.js';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -44,50 +54,63 @@ async function main() {
 
   // Fetch layers; each is allowed to fail independently — a dossier with
   // gaps is valid, and the narrative layer is designed to handle gaps.
-  const results = await Promise.allSettled([
-    fetchCoreStats(tract),
-    fetchYearBuiltDistribution(tract),
-    fetchAmenities(anchor),
-  ]);
-  let [core, yearBuilt, amenities] = results.map((r) => {
+  const settle = (r) => {
     if (r.status === 'rejected') console.warn('Layer failed:', r.reason?.message);
     return r.status === 'fulfilled' ? r.value : null;
-  });
+  };
+  // ACS layers run concurrently; the two Overpass layers run one at a time —
+  // the public instance allots few slots per IP and parallel queries invite 429s.
+  let [core, yearBuilt] = (await Promise.allSettled([
+    fetchCoreStats(tract),
+    fetchYearBuiltDistribution(tract),
+  ])).map(settle);
+  let [amenities] = (await Promise.allSettled([fetchAmenities(anchor)])).map(settle);
+  let [geography] = (await Promise.allSettled([fetchGeography(tract)])).map(settle);
 
   // A rerun where one flaky layer fails must not clobber a good value already
   // on disk (Overpass 504s make this common). Keep the previous layer instead.
   const outPath = `data/dossier-${tract.geoid}.json`;
   try {
-    const prev = JSON.parse(await readFile(outPath, 'utf8')).layers;
-    if (!core && prev.core) { core = prev.core; console.warn('  kept core layer from previous dossier'); }
-    if (!yearBuilt && prev.yearBuilt) { yearBuilt = prev.yearBuilt; console.warn('  kept yearBuilt layer from previous dossier'); }
-    if (!amenities && prev.amenities) { amenities = prev.amenities; console.warn('  kept amenities layer from previous dossier'); }
+    const prev = JSON.parse(await readFile(outPath, 'utf8'));
+    const prevCore = prev.tractCore?.layers ?? prev.layers ?? {};
+    const prevAmenities = prev.addressContext?.amenities ?? prev.layers?.amenities ?? null;
+    if (!core && prevCore.core) { core = prevCore.core; console.warn('  kept core layer from previous dossier'); }
+    if (!yearBuilt && prevCore.yearBuilt) { yearBuilt = prevCore.yearBuilt; console.warn('  kept yearBuilt layer from previous dossier'); }
+    if (!geography && prevCore.geography) { geography = prevCore.geography; console.warn('  kept geography layer from previous dossier'); }
+    if (!amenities && prevAmenities) { amenities = prevAmenities; console.warn('  kept amenities layer from previous dossier'); }
   } catch { /* no previous dossier — nothing to preserve */ }
 
   const dossier = {
-    schemaVersion: '0.1.0',
+    schemaVersion: '0.2.0',
     generatedAt: new Date().toISOString(),
     sources: {
-      geography: 'US Census Bureau Geocoder (Public_AR_Current)',
+      geocoding: 'US Census Bureau Geocoder (Public_AR_Current)',
       demographics: `US Census Bureau ACS 5-year (${process.env.ACS_YEAR || '2024'})`,
       amenities: 'OpenStreetMap contributors, via Overpass API',
+      geography: 'OpenStreetMap contributors, via Overpass API',
     },
     input: geo.matchedAddress ? { matchedAddress: geo.matchedAddress } : { coordinates: geo.location },
-    tract: {
-      geoid: tract.geoid,
-      name: tract.name,
-      centroid: tract.centroid,
-      areaLandSqM: tract.areaLand,
-      areaWaterSqM: tract.areaWater,
+    tractCore: {
+      tract: {
+        geoid: tract.geoid,
+        name: tract.name,
+        centroid: tract.centroid,
+        areaLandSqM: tract.areaLand,
+        areaWaterSqM: tract.areaWater,
+      },
+      layers: {
+        core,        // population, median year built, tenure
+        yearBuilt,   // decade-bucket distribution
+        geography,   // named waterways/water/landforms near the tract
+        // Coming in later spikes:
+        canopy: null,       // NLCD tree canopy % (raster work)
+        historicalMaps: null, // Sanborn / USGS topo availability + refs
+        holc: null,           // Mapping Inequality redlining polygons, where they exist
+      },
     },
-    layers: {
-      core,        // population, median year built, tenure
-      yearBuilt,   // decade-bucket distribution
-      amenities: amenities && { anchor, ...amenities }, // walking-distance POI counts + named examples
-      // Coming in later spikes:
-      canopy: null,       // NLCD tree canopy % (raster work)
-      historicalMaps: null, // Sanborn / USGS topo availability + refs
-      holc: null,           // Mapping Inequality redlining polygons, where they exist
+    addressContext: {
+      anchor,
+      amenities,   // walking-distance POI counts + named examples
     },
   };
 
@@ -106,6 +129,11 @@ async function main() {
   }
   if (amenities) {
     console.log(`  Features within a 15-min walk: ${amenities.totalFeatures}`);
+  }
+  if (geography) {
+    const names = [...geography.namedWaterways, ...geography.namedWater, ...geography.namedLandforms]
+      .map((g) => g.name);
+    console.log(`  Named geography: ${names.length ? names.join(', ') : '(none)'}`);
   }
 }
 

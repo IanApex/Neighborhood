@@ -1,10 +1,11 @@
 {
-  "schemaVersion": "0.1.0",
-  "generatedAt": "2026-07-13T19:57:49.195Z",
+  "schemaVersion": "0.2.0",
+  "generatedAt": "2026-07-13T20:58:44.566Z",
   "sources": {
-    "geography": "US Census Bureau Geocoder (Public_AR_Current)",
+    "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
-    "amenities": "OpenStreetMap contributors, via Overpass API"
+    "amenities": "OpenStreetMap contributors, via Overpass API",
+    "geography": "OpenStreetMap contributors, via Overpass API"
   },
   "input": {
     "coordinates": {
@@ -12,91 +13,402 @@
       "lon": -87.6086
     }
   },
-  "tract": {
-    "geoid": "17031081402",
-    "name": "Census Tract 814.02",
-    "centroid": {
-      "lat": 41.8929759,
-      "lon": -87.6089327
+  "tractCore": {
+    "tract": {
+      "geoid": "17031081402",
+      "name": "Census Tract 814.02",
+      "centroid": {
+        "lat": 41.8929759,
+        "lon": -87.6089327
+      },
+      "areaLandSqM": 589626,
+      "areaWaterSqM": 0
     },
-    "areaLandSqM": "589626",
-    "areaWaterSqM": "0"
-  },
-  "layers": {
-    "core": {
-      "tractName": "Census Tract 814.02; Cook County; Illinois",
-      "medianYearBuilt": 2002,
-      "population": 6687,
-      "tenure": {
-        "totalOccupied": 3950,
-        "ownerOccupied": 1198,
-        "renterOccupied": 2752
-      }
-    },
-    "yearBuilt": {
-      "totalUnits": 4581,
-      "buckets": [
-        {
-          "variable": "B25034_011E",
-          "label": "Built 1939 or earlier",
-          "count": 188
-        },
-        {
-          "variable": "B25034_010E",
-          "label": "Built 1940 to 1949",
-          "count": 15
-        },
-        {
-          "variable": "B25034_009E",
-          "label": "Built 1950 to 1959",
-          "count": 0
-        },
-        {
-          "variable": "B25034_008E",
-          "label": "Built 1960 to 1969",
-          "count": 399
-        },
-        {
-          "variable": "B25034_007E",
-          "label": "Built 1970 to 1979",
-          "count": 142
-        },
-        {
-          "variable": "B25034_006E",
-          "label": "Built 1980 to 1989",
-          "count": 486
-        },
-        {
-          "variable": "B25034_005E",
-          "label": "Built 1990 to 1999",
-          "count": 846
-        },
-        {
-          "variable": "B25034_004E",
-          "label": "Built 2000 to 2009",
-          "count": 1075
-        },
-        {
-          "variable": "B25034_003E",
-          "label": "Built 2010 to 2019",
-          "count": 1404
-        },
-        {
-          "variable": "B25034_002E",
-          "label": "Built 2020 or later",
-          "count": 26
+    "layers": {
+      "core": {
+        "tractName": "Census Tract 814.02; Cook County; Illinois",
+        "medianYearBuilt": 2002,
+        "population": 6687,
+        "tenure": {
+          "totalOccupied": 3950,
+          "ownerOccupied": 1198,
+          "renterOccupied": 2752
         }
-      ]
+      },
+      "yearBuilt": {
+        "totalUnits": 4581,
+        "buckets": [
+          {
+            "variable": "B25034_011E",
+            "label": "Built 1939 or earlier",
+            "count": 188
+          },
+          {
+            "variable": "B25034_010E",
+            "label": "Built 1940 to 1949",
+            "count": 15
+          },
+          {
+            "variable": "B25034_009E",
+            "label": "Built 1950 to 1959",
+            "count": 0
+          },
+          {
+            "variable": "B25034_008E",
+            "label": "Built 1960 to 1969",
+            "count": 399
+          },
+          {
+            "variable": "B25034_007E",
+            "label": "Built 1970 to 1979",
+            "count": 142
+          },
+          {
+            "variable": "B25034_006E",
+            "label": "Built 1980 to 1989",
+            "count": 486
+          },
+          {
+            "variable": "B25034_005E",
+            "label": "Built 1990 to 1999",
+            "count": 846
+          },
+          {
+            "variable": "B25034_004E",
+            "label": "Built 2000 to 2009",
+            "count": 1075
+          },
+          {
+            "variable": "B25034_003E",
+            "label": "Built 2010 to 2019",
+            "count": 1404
+          },
+          {
+            "variable": "B25034_002E",
+            "label": "Built 2020 or later",
+            "count": 26
+          }
+        ]
+      },
+      "geography": {
+        "searchRadiusMeters": 1500,
+        "namedWaterways": [
+          {
+            "name": "Chicago Harbor Lock",
+            "type": "canal"
+          },
+          {
+            "name": "Chicago River",
+            "type": "river"
+          },
+          {
+            "name": "Ogden Slip",
+            "type": "canal"
+          }
+        ],
+        "namedWater": [
+          {
+            "name": "Oak Street Beach",
+            "type": "beach"
+          },
+          {
+            "name": "Ohio Street Beach",
+            "type": "beach"
+          },
+          {
+            "name": "Lake Michigan",
+            "type": "water"
+          },
+          {
+            "name": "DuSable Harbor",
+            "type": "water"
+          },
+          {
+            "name": "Monroe Harbor",
+            "type": "water"
+          }
+        ],
+        "namedLandforms": []
+      },
+      "canopy": null,
+      "historicalMaps": null,
+      "holc": null
+    }
+  },
+  "addressContext": {
+    "anchor": {
+      "lat": 41.8917,
+      "lon": -87.6086,
+      "source": "input-point"
     },
     "amenities": {
-      "anchor": {
-        "lat": 41.8917,
-        "lon": -87.6086,
-        "source": "input-point"
-      },
       "walkRadiusMeters": 1200,
       "totalFeatures": 1083,
       "counts": {
+        "amenity": {
+          "ferry_terminal": {
+            "count": 25,
+            "texture": true
+          },
+          "social_centre": {
+            "count": 1
+          },
+          "library": {
+            "count": 1
+          },
+          "parking_entrance": {
+            "count": 70,
+            "texture": true
+          },
+          "drinking_water": {
+            "count": 4,
+            "texture": true
+          },
+          "bicycle_rental": {
+            "count": 12
+          },
+          "pharmacy": {
+            "count": 4
+          },
+          "bicycle_parking": {
+            "count": 12,
+            "texture": true
+          },
+          "bank": {
+            "count": 3
+          },
+          "fast_food": {
+            "count": 19
+          },
+          "pub": {
+            "count": 5
+          },
+          "restaurant": {
+            "count": 43
+          },
+          "atm": {
+            "count": 2,
+            "texture": true
+          },
+          "post_box": {
+            "count": 16,
+            "texture": true
+          },
+          "waste_basket": {
+            "count": 34,
+            "texture": true
+          },
+          "cinema": {
+            "count": 1
+          },
+          "locker": {
+            "count": 1
+          },
+          "cafe": {
+            "count": 20
+          },
+          "parking": {
+            "count": 60,
+            "texture": true
+          },
+          "bar": {
+            "count": 20
+          },
+          "post_office": {
+            "count": 2
+          },
+          "studio": {
+            "count": 4
+          },
+          "toilets": {
+            "count": 10,
+            "texture": true
+          },
+          "kindergarten": {
+            "count": 1
+          },
+          "dentist": {
+            "count": 2
+          },
+          "parking_exit": {
+            "count": 1
+          },
+          "charging_station": {
+            "count": 1,
+            "texture": true
+          },
+          "bench": {
+            "count": 114,
+            "texture": true
+          },
+          "loading_dock": {
+            "count": 18,
+            "texture": true
+          },
+          "vending_machine": {
+            "count": 2,
+            "texture": true
+          },
+          "ice_cream": {
+            "count": 4
+          },
+          "boat_rental": {
+            "count": 3
+          },
+          "clinic": {
+            "count": 2
+          },
+          "bicycle_repair_station": {
+            "count": 1
+          },
+          "clock": {
+            "count": 1
+          },
+          "place_of_worship": {
+            "count": 1
+          },
+          "school": {
+            "count": 2
+          },
+          "veterinary": {
+            "count": 1
+          },
+          "college": {
+            "count": 2
+          },
+          "payment_terminal": {
+            "count": 1
+          },
+          "police": {
+            "count": 2
+          },
+          "shower": {
+            "count": 1
+          },
+          "hospital": {
+            "count": 2
+          },
+          "events_venue": {
+            "count": 2
+          },
+          "social_facility": {
+            "count": 1
+          },
+          "fountain": {
+            "count": 18,
+            "texture": true
+          },
+          "theatre": {
+            "count": 6
+          },
+          "fire_station": {
+            "count": 1
+          },
+          "shelter": {
+            "count": 21,
+            "texture": true
+          },
+          "bus_station": {
+            "count": 1
+          },
+          "taxi": {
+            "count": 1
+          },
+          "marketplace": {
+            "count": 1
+          },
+          "university": {
+            "count": 2
+          },
+          "weighbridge": {
+            "count": 1
+          },
+          "dog_toilet": {
+            "count": 1
+          }
+        },
+        "leisure": {
+          "sports_centre": {
+            "count": 1
+          },
+          "garden": {
+            "count": 419,
+            "texture": true
+          },
+          "playground": {
+            "count": 6
+          },
+          "park": {
+            "count": 19
+          },
+          "pitch": {
+            "count": 12
+          }
+        },
+        "shop": {
+          "supermarket": {
+            "count": 3
+          },
+          "chemist": {
+            "count": 2
+          },
+          "convenience": {
+            "count": 2
+          },
+          "gift": {
+            "count": 3
+          },
+          "wine": {
+            "count": 1
+          },
+          "copyshop": {
+            "count": 1
+          },
+          "beauty": {
+            "count": 3
+          },
+          "florist": {
+            "count": 1
+          },
+          "optician": {
+            "count": 1
+          },
+          "pet": {
+            "count": 1
+          },
+          "hairdresser": {
+            "count": 1
+          },
+          "department_store": {
+            "count": 1
+          },
+          "ticket": {
+            "count": 10
+          },
+          "coffee": {
+            "count": 2
+          },
+          "bakery": {
+            "count": 5
+          },
+          "bicycle": {
+            "count": 2
+          },
+          "confectionery": {
+            "count": 2
+          },
+          "massage": {
+            "count": 1
+          },
+          "rental": {
+            "count": 1
+          },
+          "toys": {
+            "count": 1
+          }
+        }
+      },
+      "raw": {
         "amenity": {
           "ferry_terminal": 25,
           "social_centre": 1,
@@ -185,11 +497,6 @@
         }
       },
       "namedExamples": [
-        {
-          "kind": "amenity",
-          "type": "ferry_terminal",
-          "name": "Shoreline Sightseeing"
-        },
         {
           "kind": "amenity",
           "type": "social_centre",
@@ -384,11 +691,13 @@
           "kind": "amenity",
           "type": "bank",
           "name": "Chase"
+        },
+        {
+          "kind": "shop",
+          "type": "wine",
+          "name": "Uncork It!"
         }
       ]
-    },
-    "canopy": null,
-    "historicalMaps": null,
-    "holc": null
+    }
   }
 }

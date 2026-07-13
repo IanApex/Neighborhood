@@ -1,99 +1,261 @@
 {
-  "schemaVersion": "0.1.0",
-  "generatedAt": "2026-07-13T20:03:53.797Z",
+  "schemaVersion": "0.2.0",
+  "generatedAt": "2026-07-13T20:44:13.788Z",
   "sources": {
-    "geography": "US Census Bureau Geocoder (Public_AR_Current)",
+    "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
-    "amenities": "OpenStreetMap contributors, via Overpass API"
+    "amenities": "OpenStreetMap contributors, via Overpass API",
+    "geography": "OpenStreetMap contributors, via Overpass API"
   },
   "input": {
     "matchedAddress": "335 S BROADWAY, DE PERE, WI, 54115"
   },
-  "tract": {
-    "geoid": "55009010300",
-    "name": "Census Tract 103",
-    "centroid": {
-      "lat": 44.4155364,
-      "lon": -88.0374622
+  "tractCore": {
+    "tract": {
+      "geoid": "55009010300",
+      "name": "Census Tract 103",
+      "centroid": {
+        "lat": 44.4155364,
+        "lon": -88.0374622
+      },
+      "areaLandSqM": 19256092,
+      "areaWaterSqM": 604755
     },
-    "areaLandSqM": "19256092",
-    "areaWaterSqM": "604755"
-  },
-  "layers": {
-    "core": {
-      "tractName": "Census Tract 103; Brown County; Wisconsin",
-      "medianYearBuilt": 1988,
-      "population": 7319,
-      "tenure": {
-        "totalOccupied": 3429,
-        "ownerOccupied": 2201,
-        "renterOccupied": 1228
-      }
-    },
-    "yearBuilt": {
-      "totalUnits": 3556,
-      "buckets": [
-        {
-          "variable": "B25034_011E",
-          "label": "Built 1939 or earlier",
-          "count": 349
-        },
-        {
-          "variable": "B25034_010E",
-          "label": "Built 1940 to 1949",
-          "count": 59
-        },
-        {
-          "variable": "B25034_009E",
-          "label": "Built 1950 to 1959",
-          "count": 230
-        },
-        {
-          "variable": "B25034_008E",
-          "label": "Built 1960 to 1969",
-          "count": 378
-        },
-        {
-          "variable": "B25034_007E",
-          "label": "Built 1970 to 1979",
-          "count": 390
-        },
-        {
-          "variable": "B25034_006E",
-          "label": "Built 1980 to 1989",
-          "count": 487
-        },
-        {
-          "variable": "B25034_005E",
-          "label": "Built 1990 to 1999",
-          "count": 444
-        },
-        {
-          "variable": "B25034_004E",
-          "label": "Built 2000 to 2009",
-          "count": 856
-        },
-        {
-          "variable": "B25034_003E",
-          "label": "Built 2010 to 2019",
-          "count": 253
-        },
-        {
-          "variable": "B25034_002E",
-          "label": "Built 2020 or later",
-          "count": 110
+    "layers": {
+      "core": {
+        "tractName": "Census Tract 103; Brown County; Wisconsin",
+        "medianYearBuilt": 1988,
+        "population": 7319,
+        "tenure": {
+          "totalOccupied": 3429,
+          "ownerOccupied": 2201,
+          "renterOccupied": 1228
         }
-      ]
+      },
+      "yearBuilt": {
+        "totalUnits": 3556,
+        "buckets": [
+          {
+            "variable": "B25034_011E",
+            "label": "Built 1939 or earlier",
+            "count": 349
+          },
+          {
+            "variable": "B25034_010E",
+            "label": "Built 1940 to 1949",
+            "count": 59
+          },
+          {
+            "variable": "B25034_009E",
+            "label": "Built 1950 to 1959",
+            "count": 230
+          },
+          {
+            "variable": "B25034_008E",
+            "label": "Built 1960 to 1969",
+            "count": 378
+          },
+          {
+            "variable": "B25034_007E",
+            "label": "Built 1970 to 1979",
+            "count": 390
+          },
+          {
+            "variable": "B25034_006E",
+            "label": "Built 1980 to 1989",
+            "count": 487
+          },
+          {
+            "variable": "B25034_005E",
+            "label": "Built 1990 to 1999",
+            "count": 444
+          },
+          {
+            "variable": "B25034_004E",
+            "label": "Built 2000 to 2009",
+            "count": 856
+          },
+          {
+            "variable": "B25034_003E",
+            "label": "Built 2010 to 2019",
+            "count": 253
+          },
+          {
+            "variable": "B25034_002E",
+            "label": "Built 2020 or later",
+            "count": 110
+          }
+        ]
+      },
+      "geography": {
+        "searchRadiusMeters": 4388,
+        "namedWaterways": [
+          {
+            "name": "East River",
+            "type": "river"
+          },
+          {
+            "name": "Fox River",
+            "type": "river"
+          },
+          {
+            "name": "Bower Creek",
+            "type": "river"
+          },
+          {
+            "name": "Fox River Navigational System",
+            "type": "canal"
+          }
+        ],
+        "namedWater": [
+          {
+            "name": "De Pere Lock",
+            "type": "water"
+          }
+        ],
+        "namedLandforms": [
+          {
+            "name": "Scray Hill",
+            "type": "peak"
+          }
+        ]
+      },
+      "canopy": null,
+      "historicalMaps": null,
+      "holc": null
+    }
+  },
+  "addressContext": {
+    "anchor": {
+      "lat": 44.446183879856,
+      "lon": -88.060464268054,
+      "source": "input-point"
     },
     "amenities": {
-      "anchor": {
-        "lat": 44.446183879856,
-        "lon": -88.060464268054,
-        "source": "input-point"
-      },
       "walkRadiusMeters": 1200,
       "totalFeatures": 216,
       "counts": {
+        "amenity": {
+          "post_office": {
+            "count": 1
+          },
+          "library": {
+            "count": 3
+          },
+          "theatre": {
+            "count": 5
+          },
+          "fire_station": {
+            "count": 1
+          },
+          "townhall": {
+            "count": 1
+          },
+          "bar": {
+            "count": 2
+          },
+          "fuel": {
+            "count": 4
+          },
+          "fast_food": {
+            "count": 1
+          },
+          "bench": {
+            "count": 4,
+            "texture": true
+          },
+          "cafe": {
+            "count": 4
+          },
+          "nightclub": {
+            "count": 1
+          },
+          "parking_entrance": {
+            "count": 5,
+            "texture": true
+          },
+          "parking": {
+            "count": 94,
+            "texture": true
+          },
+          "childcare": {
+            "count": 1
+          },
+          "place_of_worship": {
+            "count": 5
+          },
+          "restaurant": {
+            "count": 8
+          },
+          "bank": {
+            "count": 3
+          },
+          "school": {
+            "count": 4
+          },
+          "shelter": {
+            "count": 6,
+            "texture": true
+          },
+          "toilets": {
+            "count": 4,
+            "texture": true
+          },
+          "university": {
+            "count": 2
+          },
+          "events_venue": {
+            "count": 1
+          },
+          "cinema": {
+            "count": 1
+          },
+          "pub": {
+            "count": 1
+          },
+          "arts_centre": {
+            "count": 2
+          },
+          "car_wash": {
+            "count": 1
+          },
+          "community_centre": {
+            "count": 1
+          }
+        },
+        "leisure": {
+          "park": {
+            "count": 16
+          },
+          "playground": {
+            "count": 8
+          },
+          "pitch": {
+            "count": 15
+          },
+          "sports_centre": {
+            "count": 3
+          }
+        },
+        "shop": {
+          "bakery": {
+            "count": 1
+          },
+          "books": {
+            "count": 1
+          },
+          "beauty": {
+            "count": 1
+          },
+          "chemist": {
+            "count": 1
+          },
+          "convenience": {
+            "count": 4
+          }
+        }
+      },
+      "raw": {
         "amenity": {
           "post_office": 1,
           "library": 3,
@@ -339,9 +501,6 @@
           "name": "Lawton Park"
         }
       ]
-    },
-    "canopy": null,
-    "historicalMaps": null,
-    "holc": null
+    }
   }
 }

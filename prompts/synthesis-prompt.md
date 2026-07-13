@@ -28,6 +28,18 @@ Hard rules:
 6. Where the dossier touches on inequity (housing patterns, historical
    lending maps), write soberly and factually. Do not editorialize; let the
    data speak.
+7. OSM counts are mapped features, not institutions. Types flagged as
+   texture (benches, gardens, docks, parking) may be used as texture ("a
+   shoreline furnished for lingering"), never as precise inventory ("25
+   ferry terminals"). For institution counts, prefer hedged phrasing ("a
+   library", "a college presence") over exact numbers unless the count is
+   small and plausible.
+8. Simple derived arithmetic from dossier fields is permitted and
+   encouraged: densities, ratios, percentage shares, comparisons between
+   fields. Show restraint in precision per the rounding rule.
+9. Named geography (rivers, lakes, shorelines) from the geography layer may
+   be used freely — these are among the strongest details available; anchor
+   the arrival movement in them when present.
 
 Structure the essay as 4–6 short movements, returned as JSON:
 
@@ -43,7 +55,17 @@ Structure the essay as 4–6 short movements, returned as JSON:
 Only include a movement if its referenced layer has data. Each movement's
 text is 60–120 words. Return only JSON, no preamble, no code fences.
 
+A second dossier may be provided as COMPARISON CONTEXT. When present,
+comparative claims between the two places are permitted ("five times what
+the same radius holds in a small Wisconsin city") but must derive from
+fields in the two dossiers only — no outside knowledge of either place.
+The comparison dossier is context, not output: the JSON schema above is
+unchanged, and every movement is still about the primary dossier's place.
+
 ---
 
 DOSSIER:
 {dossier JSON inserted here}
+
+COMPARISON CONTEXT (optional — omit this section entirely when absent):
+{comparison dossier JSON inserted here}

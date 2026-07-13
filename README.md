@@ -20,13 +20,25 @@ node --env-file=.env src/assemble.js --coords 41.8917 -87.6086
 
 Output lands in `data/dossier-<GEOID>.json`.
 
-## What's in a dossier (v0.1)
+## What's in a dossier (v0.2)
 
-- Tract identity: GEOID, name, centroid, land/water area
+Split into two parts so the GEOID cache key stays honest:
+
+**tractCore** — purely a function of the tract, cacheable by GEOID:
+- Tract identity: GEOID, name, centroid, land/water area (numeric)
 - Core stats: population, median year built, owner/renter split (ACS 5-year)
-- Year-built distribution by period (ACS B25034 via group())
-- Walking-distance amenities: counts by type + named examples (OSM/Overpass)
+- Year-built distribution by period (ACS B25034 via group()), oldest first
+- Named geography: waterways, water bodies/shorelines, landforms near the
+  tract (OSM/Overpass), search radius scaled to tract size. May be empty
 - Stubs for future layers: canopy, historical maps, HOLC
+
+**addressContext** — anchored at the input point, regenerated per request:
+- Walking-distance amenities: normalized counts by type + named examples
+  (OSM/Overpass). Infrastructure-texture types (benches, gardens, parking,
+  docks) are flagged `texture: true`; institution-like types are deduped by
+  name; raw per-feature counts kept under `raw` for debugging
+- The anchor itself, with `source` noting geocoded address vs centroid
+  fallback
 
 ## First-run findings (verified live, 2026-07-13)
 

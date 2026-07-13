@@ -27,6 +27,21 @@ prompt in `prompts/synthesis-prompt.md` encodes this — keep it strict.
 - Overpass public instance for OSM amenities (rate-limited: cache, be polite)
 - Frontend later: Vue 3 + Vite + MapLibre GL (owner's home stack — not React)
 
+## Dossier structure (v0.2.0): tractCore vs addressContext
+
+The dossier is split to keep the GEOID cache key honest:
+
+- **tractCore** — everything that is purely a function of the tract:
+  identity (GEOID, name, centroid, land/water area), core ACS stats,
+  yearBuilt distribution, named geography. Cacheable by GEOID: two requests
+  in the same tract get byte-identical tractCore.
+- **addressContext** — the walking-distance amenities layer, anchored at
+  the input point (`anchor.source` records whether that was the geocoded
+  address or a centroid fallback). Regenerated per request, never cached by
+  GEOID: amenities vary by point within a tract (De Pere tract 103 centroid
+  vs address = 7 vs 216 features), so caching them per-tract would serve
+  one address's walkshed to every address in the tract.
+
 ## Known unknowns / verify before trusting
 
 - ~~B25003 tenure variable codes~~ verified correct against 2024 metadata
@@ -34,10 +49,6 @@ prompt in `prompts/synthesis-prompt.md` encodes this — keep it strict.
 - ~~ACS_YEAR~~ bumped to 2024 (newest 5-year vintage); groups metadata
   endpoint verified on both 2023 and 2024. NOTE: the Census data API now
   requires a key even for low volume — there is no keyless fallback
-- Amenities anchor on the input point (address/coords), not the tract
-  centroid — centroids of large tracts can land far from anything walkable.
-  This means the amenities layer is per-point, so a pure GEOID cache key
-  slightly over-shares for large tracts; revisit when caching is built
 - NLCD canopy, historical maps (Sanborn/USGS topo), and HOLC redlining
   layers are stubbed as null in the dossier — each is its own future spike;
   check licensing on Sanborn sheets and Mapping Inequality data before
