@@ -145,6 +145,32 @@ essay JSONs are PLACEHOLDERS (marked `"placeholder": true`) written under
 the voice spec from dossier facts only — replace with real synthesis output
 as it's ratified; the loader treats both identically.
 
+## Worker architecture (phase 4, `worker/`)
+
+The live pipeline is a Cloudflare Worker (`POST /essay`, plus `POST /geocode`
+for the ritual's honest first line). Flow: geocode (Census geocoder is
+server-side only — no CORS — which is why this exists) → KV lookup by GEOID
+for `{tractCore, essay}` → on miss, run the existing `src/` fetch modules
+(they are imported directly; `process.env` is populated from bindings) and
+synthesize with `claude-sonnet-4-6` (prompt cached static rules from
+`prompts/synthesis-prompt.md`, bundled at build time — never a divergent
+copy; trimmed dossier via `synthesisView`) → validate the movement schema,
+one corrective retry, structured error on second failure. addressContext is
+ALWAYS generated fresh (per-address by design, never cached with the tract);
+Overpass responses have their own KV cache (~200m grid key, 30-day TTL).
+
+**Fixture-parity rule: live responses must always match the fixture shape.**
+The frontend loader must not care whether data came from
+`frontend/src/fixtures/` or the worker — same keys, same layer structure,
+same `schemaVersion`. Any dossier schema change lands in three places at
+once: `src/assemble.js`, the worker's `assembleDossier`, and the fixtures.
+
+Secrets are never committed (`wrangler secret put CENSUS_API_KEY /
+ANTHROPIC_API_KEY`; local dev uses gitignored `.dev.vars`). The Anthropic
+console spend cap must be set before any deploy — owner task, not code.
+Staging is an unlisted URL: no analytics, no public sharing, owner reviews
+generated essays for unfamiliar places before any public step.
+
 ## Conventions
 
 - Each data layer fetcher lives in its own module in `src/` and may fail

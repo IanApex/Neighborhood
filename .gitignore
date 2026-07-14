@@ -2,3 +2,6 @@ node_modules/
 .env
 frontend/dist/
 frontend/smoke-out/
+worker/.dev.vars
+frontend/.env.local
+.wrangler/

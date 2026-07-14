@@ -2,11 +2,29 @@
 import { onMounted, ref } from 'vue';
 import TractPicker from './components/TractPicker.vue';
 import EssayExperience from './components/EssayExperience.vue';
+import LiveRitual from './components/LiveRitual.vue';
 import { fixtureFor } from './fixtures/index.js';
 
-// Picker (dev screen) → essay. The picked address text FLIPs into the
-// dedication line, so the picker hands the essay the source rect.
-const picked = ref(null); // { geoid, addressText, fromRect }
+// Picker → (fixture) essay, or (live) ritual-while-the-pipeline-runs → essay.
+// Live responses arrive in EXACTLY the fixture shape, so EssayExperience
+// never knows the difference.
+const picked = ref(null); // {geoid,...} | {live:{...}} | {data, addressText}
+
+function onPick(payload) {
+  picked.value = payload;
+}
+
+function onLiveReady(json) {
+  picked.value = {
+    data: json,
+    addressText: picked.value.live.addressText,
+  };
+}
+
+function reset() {
+  picked.value = null;
+  window.scrollTo(0, 0);
+}
 
 // Dev affordance: /?geoid=<GEOID> deep-links a fixture (no FLIP source),
 // and &at=<px> jumps the scroll — used by headless smoke tests.
@@ -29,24 +47,27 @@ onMounted(() => {
   const at = Number(params.get('at'));
   if (at > 0) setTimeout(() => window.scrollTo(0, at), 1200);
 });
-
-function onPick(payload) {
-  picked.value = payload;
-}
-
-function reset() {
-  picked.value = null;
-  window.scrollTo(0, 0);
-}
 </script>
 
 <template>
   <EssayExperience
-    v-if="picked"
-    :key="picked.geoid"
-    :geoid="picked.geoid"
+    v-if="picked && (picked.geoid || picked.data)"
+    :key="picked.geoid ?? 'live'"
+    :geoid="picked.geoid ?? null"
+    :data="picked.data ?? null"
+    :ritual-done="!!picked.data"
     :address-text="picked.addressText"
-    :from-rect="picked.fromRect"
+    :from-rect="picked.fromRect ?? null"
+    @close="reset"
+  />
+  <LiveRitual
+    v-else-if="picked?.live"
+    :address-text="picked.live.addressText"
+    :tract-name="picked.live.tractName"
+    :from-rect="picked.live.fromRect"
+    :request-body="picked.live.requestBody"
+    :worker-url="picked.live.workerUrl"
+    @ready="onLiveReady"
     @close="reset"
   />
   <TractPicker v-else @pick="onPick" />

@@ -20,7 +20,7 @@ import { seedFromGeoid, seededShuffle } from '../lib/seeded.js';
 const props = defineProps({
   dossier: { type: Object, required: true },
   essayBuilt: { type: Object, required: true }, // movement {text, checkpoints?}
-  essayHome: { type: Object, required: true },
+  essayHome: { type: Object, default: null }, // may be absent (thin tenure data)
   reducedMotion: { type: Boolean, default: false },
 });
 
@@ -66,7 +66,11 @@ function checkpointOffset(cp) {
   return (unit + 1) / decades.length;
 }
 
-const homeParagraphs = computed(() => props.essayHome.text.split(/\n\n+/));
+const homeParagraphs = computed(() => (props.essayHome?.text ?? '').split(/\n\n+/).filter(Boolean));
+
+// Without tenure data there is nothing honest to drain — the fills stay in
+// era tints and the Home beat is prose-only (or absent entirely).
+const canDrain = tenure?.totalOccupied != null;
 
 // ——— canvas ———
 const blockEl = ref(null);
@@ -295,8 +299,8 @@ function onScroll() {
   targetYear = p <= 0 ? FIRST_YEAR : (progressToYear(p, decades) ?? FIRST_YEAR);
 
   // Past the built track, the fills change in place. Scroll-armed but
-  // time-eased — Built alone owns true scrubbing.
-  settleTarget = intoBlock > builtTrackH - vh * 0.25 ? 1 : 0;
+  // time-eased — Built alone owns true scrubbing. No tenure data → no drain.
+  settleTarget = canDrain && intoBlock > builtTrackH - vh * 0.25 ? 1 : 0;
 
   // Only in the block's final stretch — after the vacancy beat has had the
   // stage to itself — does the field dissolve and hand back to the map,

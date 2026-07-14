@@ -32,8 +32,9 @@ export function synthesisView(dossier) {
   return view;
 }
 
-// CLI: print the trimmed JSON for a dossier file.
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+// CLI: print the trimmed JSON for a dossier file. (argv[1] is absent when
+// bundled into the Cloudflare Worker — this block is CLI-only.)
+if (process.argv?.[1] && import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
   const path = process.argv[2];
   if (!path) {
     console.error('Usage: node src/dossier-view.js <dossier.json>');

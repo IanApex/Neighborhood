@@ -1,10 +1,51 @@
 <script setup>
+import { ref } from 'vue';
 import { fixtures } from '../fixtures/index.js';
 
 // Opening state: blank paper, one address input, one instruction line.
-// Fixtures phase: picking a tract simulates the commit; the picked text
-// FLIPs into the essay's dedication line.
+// With a worker configured (VITE_WORKER_URL) the input is real: submit
+// geocodes the address and hands off to the live ritual. The three
+// reference fixtures remain beneath it as instant demo entries — they
+// never hit the worker.
 const emit = defineEmits(['pick']);
+
+const workerUrl = (import.meta.env.VITE_WORKER_URL ?? '').replace(/\/$/, '');
+const live = !!workerUrl;
+const address = ref('');
+const state = ref('idle'); // idle | checking | notfound | error
+const inputEl = ref(null);
+
+async function submit() {
+  const text = address.value.trim();
+  if (!live || !text || state.value === 'checking') return;
+  state.value = 'checking';
+  try {
+    const resp = await fetch(`${workerUrl}/geocode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: text }),
+    });
+    if (resp.status === 404) {
+      state.value = 'notfound'; // inline, quiet, no alarm styling
+      return;
+    }
+    if (!resp.ok) throw new Error(String(resp.status));
+    const { tractName } = await resp.json();
+    const rect = inputEl.value.getBoundingClientRect();
+    state.value = 'idle';
+    emit('pick', {
+      live: {
+        addressText: text,
+        tractName,
+        requestBody: { address: text },
+        workerUrl,
+        fromRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+      },
+    });
+  } catch {
+    state.value = 'error';
+  }
+}
 
 function addressOf(fixture) {
   const input = fixture.dossier.input;
@@ -39,18 +80,30 @@ function pick(fixture, event) {
 
 <template>
   <main class="picker">
-    <label class="picker-field">
+    <div class="picker-field">
       <input
+        ref="inputEl"
+        v-model="address"
         class="picker-input"
         type="text"
         placeholder=""
         aria-label="Address"
-        readonly
+        :readonly="!live"
+        :disabled="state === 'checking'"
+        @keydown.enter="submit"
+        @input="state = 'idle'"
       />
-      <span class="picker-instruction">Type an address.</span>
-    </label>
+      <span v-if="state === 'notfound'" class="picker-instruction picker-quiet">
+        The record has no entry for that address.
+      </span>
+      <span v-else-if="state === 'error'" class="picker-instruction picker-quiet">
+        The record couldn't be reached just now.
+      </span>
+      <span v-else-if="state === 'checking'" class="picker-instruction">Looking.</span>
+      <span v-else class="picker-instruction">Type an address.</span>
+    </div>
 
-    <!-- Dev screen: the three reference fixtures stand in for geocoding. -->
+    <!-- The three reference fixtures: instant demo entries. -->
     <ul class="picker-fixtures" aria-label="Reference tracts (fixtures)">
       <li v-for="f in fixtures" :key="f.geoid">
         <button class="picker-choice" type="button" @click="pick(f, $event)">
@@ -97,6 +150,16 @@ function pick(fixture, event) {
   font-size: var(--text-label);
   letter-spacing: 0.08em;
   color: var(--ink-faint);
+}
+
+/* not-found / error: same register, slightly present — never alarm styling */
+.picker-quiet {
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.875rem;
 }
 
 .picker-fixtures {

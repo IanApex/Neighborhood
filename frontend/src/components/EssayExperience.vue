@@ -2,19 +2,24 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { fixtureFor } from '../fixtures/index.js';
 import { decadesFrom } from '../lib/stock.js';
+import { orderPinsGreedy } from '../lib/walk.js';
 import { useReducedMotion, observeReveals } from '../lib/motion.js';
 import MapStage from './MapStage.vue';
 import StockField from './StockField.vue';
 import TheRecord from './TheRecord.vue';
 
 const props = defineProps({
-  geoid: { type: String, required: true },
+  geoid: { type: String, default: null },
   addressText: { type: String, required: true },
   fromRect: { type: Object, default: null },
+  // Live mode: data fetched from the worker (EXACT fixture shape), with the
+  // resolution ritual already performed while the pipeline ran.
+  data: { type: Object, default: null },
+  ritualDone: { type: Boolean, default: false },
 });
 const emit = defineEmits(['close']);
 
-const { dossier, essay } = fixtureFor(props.geoid);
+const { dossier, essay } = props.data ?? fixtureFor(props.geoid);
 const reducedMotion = useReducedMotion();
 
 const movement = (id) => essay.movements.find((m) => m.id === id) ?? null;
@@ -81,14 +86,21 @@ async function flipDedication() {
 }
 
 // Title page composing itself: address, then tract, then the reading line —
-// quiet, typographic, no spinners.
+// quiet, typographic, no spinners. In live mode the ritual already played
+// during the real pipeline (honest loading) — recompose instantly and go
+// straight to the map's order of knowing.
 async function runRitual() {
-  await flipDedication();
-  await beat();
-  ritualStep.value = 1;
-  await beat();
-  ritualStep.value = 2;
-  await beat();
+  if (props.ritualDone) {
+    flipDone.value = true;
+    ritualStep.value = 2;
+  } else {
+    await flipDedication();
+    await beat();
+    ritualStep.value = 1;
+    await beat();
+    ritualStep.value = 2;
+    await beat();
+  }
   await mapStage.value.beginArrival(); // the map draws in the order of knowing
   mapSettled.value = true;
   await nextTick();
@@ -135,17 +147,12 @@ function resolvePins(names) {
 // never zigzags; after the LAST paragraph the dot walks home and only
 // then may the chrome recede — the loop always closes.
 function dropPinsFor(idx) {
-  const pins = resolvePins(walkingParagraphs.value[idx]?.pins).filter((p) => p.lat != null);
-  const dist = (a, b) => Math.hypot(a.lat - b.lat, (a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180));
-  if (pins.length) {
-    let from = mapStage.value.youPosition() ?? dossier.addressContext.anchor;
-    const remaining = [...pins];
-    const ordered = [];
-    while (remaining.length) {
-      remaining.sort((a, b) => dist(from, a) - dist(from, b));
-      from = remaining.shift();
-      ordered.push(from);
-    }
+  const pins = resolvePins(walkingParagraphs.value[idx]?.pins);
+  const ordered = orderPinsGreedy(
+    mapStage.value.youPosition() ?? dossier.addressContext.anchor,
+    pins,
+  );
+  if (ordered.length) {
     mapStage.value.addPins(ordered);
     for (const pin of ordered) mapStage.value.walkTo(pin); // the reader accompanies themselves
   }
@@ -283,8 +290,9 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <!-- BUILT + HOME — the stock field owns this whole block. -->
-      <div v-if="built && home" ref="stockEl">
+      <!-- BUILT + HOME — the stock field owns this whole block. A missing
+           home movement (thin tenure data) still sequences Built→Walking. -->
+      <div v-if="built" ref="stockEl">
         <StockField
           :dossier="dossier"
           :essay-built="built"

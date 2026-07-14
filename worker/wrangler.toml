@@ -1,0 +1,30 @@
+# Neighborhood Essay worker — live address pipeline.
+#
+# Secrets (NEVER committed — set via `wrangler secret put`):
+#   CENSUS_API_KEY     — free key from https://api.census.gov/data/key_signup.html
+#   ANTHROPIC_API_KEY  — set the Anthropic console spend cap BEFORE deploying
+#
+# KV namespace: create with `wrangler kv namespace create ESSAYS` and paste
+# the id below (and a --preview id for `wrangler dev`).
+
+name = "neighborhood-essay"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Bundle the synthesis prompt as text at build time — prompts/synthesis-prompt.md
+# stays the single source of truth; the worker never carries a divergent copy.
+[[rules]]
+type = "Text"
+globs = ["**/*.md"]
+fallthrough = true
+
+[vars]
+ACS_YEAR = "2024"
+# OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter"
+# ALLOWED_ORIGIN = "https://your-staging-host"   # default: * (staging is unlisted)
+
+[[kv_namespaces]]
+binding = "ESSAYS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
