@@ -1,0 +1,41 @@
+{
+  "placeholder": true,
+  "note": "PLACEHOLDER essay — written under the voice spec from dossier facts only, so the experience can be built and tested. Replace this file with ratified synthesis output (same filename, same schema); the loader treats both identically. checkpoints/paragraphs are optional authoring aids the frontend honors.",
+  "geoid": "55009010300",
+  "title": "A Bend in the Fox",
+  "movements": [
+    {
+      "id": "arrival",
+      "layerRef": "geography",
+      "text": "You are standing near water that has names. The Fox River passes through the public record here, joined by the East River and Bower Creek, and the record keeps entries for a lock — De Pere Lock — and a navigational canal threaded along the river's course. There is even a named rise, Scray Hill. Around this water, a small city: about seven thousand three hundred people in this tract, on a few square kilometers of land. The map you are watching assemble is drawn from that record, in the order it was known."
+    },
+    {
+      "id": "built",
+      "layerRef": "yearBuilt",
+      "text": "The oldest layer of housing here predates 1940 — about 350 units still standing from that era. The 1940s added barely five dozen. Then a long, even accumulation: a few hundred units in each decade from the fifties through the nineties. The 2000s broke the pattern — more than 850 units in ten years, the largest decade on record and nearly a quarter of everything standing. Building has slowed since: about 360 units across the last fifteen years. The median home here dates to 1988.",
+      "checkpoints": [
+        { "afterYear": 1939, "text": "The oldest layer of housing here predates 1940 — about 350 units still standing from that era." },
+        { "afterYear": 1949, "text": "The 1940s added barely five dozen." },
+        { "afterYear": 1999, "text": "Then a long, even accumulation: a few hundred units in each decade from the fifties through the nineties." },
+        { "afterYear": 2009, "text": "The 2000s broke the pattern — more than 850 units in ten years, the largest decade on record and nearly a quarter of everything standing." },
+        { "afterYear": 2024, "text": "Building has slowed since: about 360 units across the last fifteen years. The median home here dates to 1988." }
+      ]
+    },
+    {
+      "id": "home",
+      "layerRef": "core",
+      "text": "Of roughly 3,550 housing units in the tract, about 3,430 are occupied — the record shows only around 130 standing empty. Nearly two in three occupied homes are owned by the people living in them; the rest are rented. That's most of a city block by block, held by its own residents. The proportions are ordinary, which is itself information: this is a housing stock in full use."
+    },
+    {
+      "id": "walking",
+      "layerRef": "amenities",
+      "text": "Within a fifteen-minute walk of your address, the map holds 216 features. The civic core is close: a post office, a city hall, a fire station. There are libraries here — the record shows a branch of the county system — and a cluster of stages: the Walter and Webb theatres, a comedy house. Coffee is walkable in several directions: Luna Coffee Roasters, a café on Broadway. And the parks keep coming — sixteen mapped within the radius, from Voyageur Park by the river to Legion and Optimist. The last one you pass is a block from home.",
+      "paragraphs": [
+        { "text": "Within a fifteen-minute walk of your address, the map holds 216 features. The civic core is close: a post office, a city hall, a fire station.", "pins": ["De Pere Post Office", "De Pere City Hall", "De Pere Fire Dept, Station 1"] },
+        { "text": "There are libraries here — the record shows a branch of the county system — and a cluster of stages: the Walter and Webb theatres, a comedy house.", "pins": ["De Pere Branch Brown County Library", "Walter Theatre", "Webb Theatre", "ComedyCity De Pere"] },
+        { "text": "Coffee is walkable in several directions: Luna Coffee Roasters, a café on Broadway.", "pins": ["Luna Coffee Roasters", "Café on Broadway", "Great Harvest Bread Co."] },
+        { "text": "And the parks keep coming — sixteen mapped within the radius, from Voyageur Park by the river to Legion and Optimist. The last one you pass is a block from home.", "pins": ["Voyageur Park", "Legion Park", "Optimist Park", "Wilcox Park", "Bicentennial Park"] }
+      ]
+    }
+  ]
+}

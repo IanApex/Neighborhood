@@ -1,0 +1,59 @@
+/* Design tokens — one palette, one type system, one motion language for
+   every tract in America. Color enters only when its data layer arrives;
+   the final quantity of color on the page equals the quantity of data.
+   Nothing here may vary per tract. */
+
+:root {
+  /* Paper and ink. The page starts near-monochrome. */
+  --paper: #f7f3ea;
+  --ink: #211d18;
+  --ink-soft: rgba(33, 29, 24, 0.62);
+  --ink-faint: rgba(33, 29, 24, 0.28);
+  --hairline: rgba(33, 29, 24, 0.16);
+
+  /* Layer hues — each enters ONLY when its movement arrives. */
+  --water: #46708d;            /* geography: named waterways, shorelines   */
+  --park: #5f7d58;             /* leisure green, walking movement          */
+  --place: #8d8271;            /* neutral accent for other named places    */
+  --owner: #97744a;            /* tenure: owner-occupied                   */
+  --renter: #667180;           /* tenure: renter-occupied                  */
+
+  /* Construction-era ramp, oldest → newest. Ten steps; each B25034 decade
+     bucket takes one. Warm dark (pre-war) cooling toward pale (new). */
+  --era-0: #59422f;  /* 1939 or earlier */
+  --era-1: #6a5138;  /* 1940s */
+  --era-2: #7a6043;  /* 1950s */
+  --era-3: #886e4f;  /* 1960s */
+  --era-4: #937d5e;  /* 1970s */
+  --era-5: #9c8c70;  /* 1980s */
+  --era-6: #a29a83;  /* 1990s */
+  --era-7: #a6a795;  /* 2000s */
+  --era-8: #a9b1a6;  /* 2010s */
+  --era-9: #aab8b4;  /* 2020s */
+
+  /* Typography. Book serif for essay prose and the dedication; a small
+     utility sans for labels and counters. */
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+    Georgia, 'Times New Roman', serif;
+  --sans: ui-sans-serif, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  --text-body: 1.0625rem;      /* 17px at default root */
+  --text-dedication: 1.375rem;
+  --text-label: 0.75rem;
+  --text-counter: 3.25rem;
+  --leading-body: 1.72;
+  --measure: 34rem;            /* comfortable book measure */
+
+  /* Space — generous margins are the reverence. */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 3.5rem;
+  --space-5: 6rem;
+
+  /* Motion — one language. A beat is the unit of the resolution ritual. */
+  --beat: 900ms;
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --reveal-duration: 700ms;
+  --reveal-rise: 0.6rem;
+}

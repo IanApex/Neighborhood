@@ -1,8 +1,8 @@
-# Neighborhood Essay — phase 1 data spike
+# Neighborhood Essay
 
-Address in → place dossier JSON out. This spike answers one question: is the
-open data rich enough, for both a small Wisconsin city and a dense urban
-tract, to support a generated essay worth designing around?
+Address in → place dossier JSON out → a scroll-driven visual essay.
+Phase 1 (data spike) and phase 2 (narrative voice) are closed; phase 3
+(the scroll experience, `frontend/`) is in progress against static fixtures.
 
 ## Setup
 
@@ -24,6 +24,28 @@ map geometry):
 
 ```
 npm run synthesis-view data/dossier-<GEOID>.json
+```
+
+## Frontend (phase 3)
+
+Vue 3 + Vite + MapLibre GL, hand-rolled CSS with design tokens, mobile-first
+at 390px. Static fixtures only — the three reference dossiers plus matching
+essay JSONs (currently placeholders, flagged in-file) paired by GEOID in
+`frontend/src/fixtures/`. No pipeline/geocoding/synthesis calls; the basemap
+is OpenFreeMap vector tiles (keyless), recolored to the token palette.
+
+```
+cd frontend
+npm install
+npm run dev          # tract-picker dev screen at the root
+```
+
+Deep-link a fixture with `/?geoid=<GEOID>`. Smoke-test all three fixtures in
+headless Chrome (screenshots + console errors, 390×844):
+
+```
+npm run build && npm run preview   # in one terminal
+node scripts/smoke.mjs out         # in another; add --reduced-motion
 ```
 
 ## Reference tracts

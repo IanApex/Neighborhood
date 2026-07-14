@@ -1,0 +1,40 @@
+{
+  "placeholder": true,
+  "note": "PLACEHOLDER essay — written under the voice spec from dossier facts only, so the experience can be built and tested. Replace this file with ratified synthesis output (same filename, same schema); the loader treats both identically.",
+  "geoid": "17031081402",
+  "title": "Between the River and the Lake",
+  "movements": [
+    {
+      "id": "arrival",
+      "layerRef": "geography",
+      "text": "You are standing between two waters the record names in full: the Chicago River and Lake Michigan. Between them it lists a working shoreline — a harbor lock, the Ogden Slip, two named beaches at Oak Street and Ohio Street, harbors called DuSable and Monroe. Almost seven thousand people live in this tract, on land that is nearly one part water to three parts ground. The shoreline is not scenery here; it is infrastructure with names. The map draws the water first because the record knew the water first."
+    },
+    {
+      "id": "built",
+      "layerRef": "yearBuilt",
+      "text": "Fewer than two hundred units here survive from before 1940, and the 1940s added fifteen. The 1950s added none at all. Then the curve turns: about 400 units in the sixties, a quieter seventies, nearly 500 in the eighties. After that the tract essentially builds itself — 846 units in the nineties, over a thousand in the 2000s, and 1,404 in the 2010s, the largest decade on record. The 2020s so far: 26. The median home here dates to 2002. Most of this place is younger than the people living in it.",
+      "checkpoints": [
+        { "afterYear": 1949, "text": "Fewer than two hundred units here survive from before 1940, and the 1940s added fifteen." },
+        { "afterYear": 1959, "text": "The 1950s added none at all." },
+        { "afterYear": 1989, "text": "Then the curve turns: about 400 units in the sixties, a quieter seventies, nearly 500 in the eighties." },
+        { "afterYear": 2019, "text": "After that the tract essentially builds itself — 846 units in the nineties, over a thousand in the 2000s, and 1,404 in the 2010s, the largest decade on record." },
+        { "afterYear": 2024, "text": "The 2020s so far: 26. The median home here dates to 2002. Most of this place is younger than the people living in it." }
+      ]
+    },
+    {
+      "id": "home",
+      "layerRef": "core",
+      "text": "The tract holds about 4,580 housing units; roughly 3,950 are occupied, leaving somewhere over six hundred — about one in seven — without a household in the record. Of the homes people do live in, seven in ten are rented. That is the tenure shape of a high-rise district: many doors, few deeds. Ownership here is the exception, at about 1,200 households."
+    },
+    {
+      "id": "walking",
+      "layerRef": "amenities",
+      "text": "Within a fifteen-minute walk of your address the map is dense with record: over a thousand features. A university law library anchors one corner of it; a post office carries the neighborhood's name. Food is at every scale, from supermarkets — a Mariano's, a Whole Foods — to a tavern the record lists twice over on the riverwalk. A twenty-one-screen cinema sits within the radius. The walk ends where it began, between the river and the lake.",
+      "paragraphs": [
+        { "text": "Within a fifteen-minute walk of your address the map is dense with record: over a thousand features. A university law library anchors one corner of it; a post office carries the neighborhood's name.", "pins": ["Northwestern University Law Library", "Streeterville Post Office"] },
+        { "text": "Food is at every scale, from supermarkets — a Mariano's, a Whole Foods — to a tavern the record lists twice over on the riverwalk.", "pins": ["Mariano's Fresh Market", "Whole Foods Market", "Billy Goat Tavern", "Harry Caray's Tavern"] },
+        { "text": "A twenty-one-screen cinema sits within the radius. The walk ends where it began, between the river and the lake.", "pins": ["AMC River East 21", "Columbia Yacht Club"] }
+      ]
+    }
+  ]
+}

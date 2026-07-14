@@ -1,0 +1,41 @@
+{
+  "placeholder": true,
+  "note": "PLACEHOLDER essay — written under the voice spec from dossier facts only, so the experience can be built and tested. Replace this file with ratified synthesis output (same filename, same schema); the loader treats both identically.",
+  "geoid": "26163514300",
+  "title": "Tract 5143",
+  "movements": [
+    {
+      "id": "arrival",
+      "layerRef": "geography",
+      "text": "You are standing in a street grid. The public record for this square mile and a half of Detroit's east side lists no named river, no shoreline, no rise of ground — the geography layer of its file is empty. That is not the same as nothing being here. It means the streets themselves are the oldest markings on this page. About 2,300 people live inside them. The map you are watching draws the grid alone, because the grid is what the record knows."
+    },
+    {
+      "id": "built",
+      "layerRef": "yearBuilt",
+      "text": "Nearly 700 of this tract's homes — six in ten — were standing before 1940. The 1950s added another 233. Then the record thins: 62 units in the sixties. Through the entire 1970s, zero. The eighties and nineties together added fewer than fifty. A brief return in the 2000s — 93 units — and then nothing again: zero in the 2010s, zero so far in the 2020s. The median home here was built in 1938. Most of this place is closing in on its hundredth year.",
+      "checkpoints": [
+        { "afterYear": 1939, "text": "Nearly 700 of this tract's homes — six in ten — were standing before 1940." },
+        { "afterYear": 1959, "text": "The 1950s added another 233." },
+        { "afterYear": 1969, "text": "Then the record thins: 62 units in the sixties." },
+        { "afterYear": 1979, "text": "Through the entire 1970s, zero." },
+        { "afterYear": 1999, "text": "The eighties and nineties together added fewer than fifty." },
+        { "afterYear": 2024, "text": "A brief return in the 2000s — 93 units — and then nothing again: zero in the 2010s, zero so far in the 2020s. The median home here was built in 1938. Most of this place is closing in on its hundredth year." }
+      ]
+    },
+    {
+      "id": "home",
+      "layerRef": "core",
+      "text": "The tract holds 1,181 housing units. The record finds households in 763 of them. That leaves more than 400 — about one unit in three — with no one home in the count. The census knows this only in aggregate; it cannot say which doors, and neither can this page. Among the households that are here, ownership holds a slight majority: 421 owner-occupied homes to 342 rented. People who stayed, largely own."
+    },
+    {
+      "id": "walking",
+      "layerRef": "amenities",
+      "text": "Within a fifteen-minute walk of your address the map holds 126 features. What the record shows most of is congregations — some two dozen mapped places of worship, more than any other kind of gathering place here. Food is close and practical: a bakery café called On the Rise, Wonder Foods, Farmer John Food Center, Harding Market. There are eight parks in the radius, a college, four schools. You pass more churches than storefronts on the way home.",
+      "paragraphs": [
+        { "text": "Within a fifteen-minute walk of your address the map holds 126 features. What the record shows most of is congregations — some two dozen mapped places of worship, more than any other kind of gathering place here.", "pins": [] },
+        { "text": "Food is close and practical: a bakery café called On the Rise, Wonder Foods, Farmer John Food Center, Harding Market.", "pins": ["On the Rise Bakery & Cafe", "Wonder Foods Supermarket", "Farmer John Food Center", "Harding Market"] },
+        { "text": "There are eight parks in the radius, a college, four schools. You pass more churches than storefronts on the way home.", "pins": ["Louis' Convenience Store", "Rock City Eats & Sweets"] }
+      ]
+    }
+  ]
+}

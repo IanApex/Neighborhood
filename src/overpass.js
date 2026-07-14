@@ -85,9 +85,10 @@ out center tags;`;
       } else {
         unnamed.set(key, (unnamed.get(key) || 0) + 1);
       }
-      if (tags.name && !TEXTURE_TYPES.has(v) && named.length < 40) {
+      if (tags.name && !TEXTURE_TYPES.has(v) && named.length < 60) {
         // Nodes carry lat/lon directly; ways/relations get a center point
-        // from `out center`. Phase 3 plots these on the map.
+        // from `out center`. Phase 3 plots these on the map. Collect past
+        // the final cap of 40 — cross-category dedupe below shrinks the list.
         const lat = el.lat ?? el.center?.lat ?? null;
         const lon = el.lon ?? el.center?.lon ?? null;
         named.push({ kind, type: v, name: tags.name, lat, lon });
@@ -114,6 +115,31 @@ out center tags;`;
     raw,
     // A few real names make the narrative concrete ("the library on Main St")
     // without shipping the whole POI dump into the prompt.
-    namedExamples: named,
+    namedExamples: dedupeNamed(named).slice(0, 40),
   };
+}
+
+// One real-world site often appears in several categories ("Mobil" as fuel
+// plus "Mobil Mart" as convenience). Two entries are the same site when they
+// sit within ~50m and one normalized name contains the other as a prefix.
+// The longer name wins — it's the more specific one.
+function dedupeNamed(named) {
+  const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const meters = (a, b) => {
+    if (a.lat == null || b.lat == null) return Infinity;
+    const dLat = (a.lat - b.lat) * 111_320;
+    const dLon = (a.lon - b.lon) * 111_320 * Math.cos((a.lat * Math.PI) / 180);
+    return Math.hypot(dLat, dLon);
+  };
+  const kept = [];
+  for (const entry of named) {
+    const n = norm(entry.name);
+    const twin = kept.find((k) => {
+      const kn = norm(k.name);
+      return (kn.startsWith(n) || n.startsWith(kn)) && meters(entry, k) < 50;
+    });
+    if (!twin) { kept.push(entry); continue; }
+    if (n.length > norm(twin.name).length) kept[kept.indexOf(twin)] = entry;
+  }
+  return kept;
 }

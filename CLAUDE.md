@@ -11,6 +11,20 @@ This repo is currently **phase 1: the data spike.** Goal: produce complete,
 readable dossiers for two contrasting tracts (one in De Pere WI, one dense
 urban tract) and judge whether the raw material is rich enough.
 
+## Design thesis (phase 3) — governs every visual choice
+
+The visual system is forbidden from editorializing, exactly as the prose is.
+One palette, one type system, one motion language for every tract in America.
+No per-tract mood, color grading, or atmosphere. The truth lives in the
+data's shape rendered plainly: sparse tracts end quieter than rich ones by
+construction, never by art direction. Reverence is expressed through
+restraint (whitespace, pacing, book-quality typography, no UI chrome), never
+through atmosphere (no vignettes, grain, or ambient washes). Where the data
+is silent, the page is visibly quiet — an empty layer is choreography, not a
+bug. Never render a fact at a precision the dossier doesn't have (e.g.
+vacancy is known in aggregate, not per-parcel — it must never appear as
+locations on the map).
+
 ## Core architectural rule — do not violate
 
 The narrative layer may only state facts present in the dossier JSON. Never
@@ -75,6 +89,43 @@ not reputations. Detroit 5143 qualified on the most simultaneous signals
 
 North St. Louis (29510127700) had higher vacancy (~44%) but also 366
 amenities and a named lake — a softer test of the arrival/walking movements.
+
+## Movement architecture (phase 3 frontend)
+
+The essay renders as ordered `<section>` movements over a persistent map
+stage; color accumulates as layers arrive (final quantity of color =
+quantity of data):
+
+1. **Arrival** — blank paper + address input; committed address FLIPs into
+   the dedication line; resolution ritual sets line-by-line; the map draws
+   in the dossier's order of knowing (named geography inks first when
+   present, street grid fades up around it; empty geography = grid draws
+   alone, same timing). No fly-to, ever. Second-person prose follows.
+2. **Built** — the ONLY scroll-scrubbed movement: scroll sets a target year,
+   rAF eases toward it; equal scroll distance per decade (empty decades
+   scroll at full length while only the year counter moves); housing units
+   are an accumulating field of era-tinted marks beside the prose, never on
+   the map (no footprints in the dossier); each paragraph lands after its
+   decade range completes.
+3. **Home** — the same marks resettle into a plain ordered field;
+   vacancy (totalUnits − totalOccupied) hollows that many marks to outlines
+   (seeded by GEOID, stable across visits, never on the map); filled marks
+   split into the two tenure tones.
+4. **Walking** — map returns centered on addressContext.anchor; the walk
+   radius breathes out as a drawn line; only namedExamples with coordinates
+   get plotted, in sync with the prose; anonymous counts stay prose-only.
+   Closing state = the accumulated page (the shareable portrait, exported
+   as an image).
+
+All movements except Built use simple IntersectionObserver reveals.
+prefers-reduced-motion swaps Built's scrub for per-decade small multiples
+and every entrance for a plain fade — same truth, print form.
+
+Frontend fixtures pair `frontend/src/fixtures/dossier-<GEOID>.json` with
+`frontend/src/fixtures/essays/essay-<GEOID>.json` by GEOID. The committed
+essay JSONs are PLACEHOLDERS (marked `"placeholder": true`) written under
+the voice spec from dossier facts only — replace with real synthesis output
+as it's ratified; the loader treats both identically.
 
 ## Conventions
 
