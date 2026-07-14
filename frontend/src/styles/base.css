@@ -1,6 +1,24 @@
 /* Base — mobile-first (390px is the design surface; desktop adapts).
    No UI chrome: the page is paper, the essay is the interface. */
 
+/* Literata — variable weight, roman + italic. OFL-licensed; license ships
+   alongside the files in assets/fonts/. */
+@font-face {
+  font-family: 'Literata';
+  src: url('../assets/fonts/Literata-Variable.ttf') format('truetype-variations');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Literata';
+  src: url('../assets/fonts/Literata-Italic-Variable.ttf') format('truetype-variations');
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {

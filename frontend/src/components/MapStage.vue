@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import maplibregl from 'maplibre-gl';
 import { circlePolygon, tractBounds, boundsAround } from '../lib/geo.js';
+import { drawColumnsFigure } from '../lib/columnsFigure.js';
 
 // The persistent map stage. It never flies, never zooms from orbit — it
 // draws itself in the dossier's order of knowing: named geography inks in
@@ -125,7 +126,69 @@ function transformStyle(next) {
     }
     return copy;
   });
-  return { ...next, layers };
+  // Self-hosted Literata Italic glyphs: the only text the map ever sets is
+  // the dossier's named water, in the essay's own serif. Every source
+  // symbol layer is hidden, so no other glyph stack is ever requested.
+  return { ...next, layers, glyphs: `${location.origin}/glyphs/{fontstack}/{range}.pbf` };
+}
+
+// The map says the river's name — and nothing else. Labels exist only for
+// names present in the dossier's geography layer; an empty layer means an
+// unlabeled map. They ink in WITH the water, same timing.
+function addWaterLabels() {
+  const g = props.dossier.tractCore.layers.geography;
+  const waterwayNames = (g?.namedWaterways ?? []).map((x) => x.name);
+  const waterNames = (g?.namedWater ?? []).map((x) => x.name);
+  if (!waterwayNames.length && !waterNames.length) return;
+
+  const sourceId = Object.entries(map.getStyle().sources).find(([, s]) => s.type === 'vector')?.[0];
+  if (!sourceId) return;
+
+  const common = {
+    type: 'symbol',
+    source: sourceId,
+    paint: { 'text-color': tokens.ink, 'text-opacity': 0 },
+  };
+  if (waterwayNames.length) {
+    map.addLayer({
+      ...common,
+      id: 'named-waterway-labels',
+      'source-layer': 'waterway',
+      filter: ['in', ['get', 'name'], ['literal', waterwayNames]],
+      layout: {
+        'symbol-placement': 'line',
+        'text-field': ['get', 'name'],
+        'text-font': ['Literata Italic'],
+        'text-size': 11.5,
+        'text-letter-spacing': 0.06,
+      },
+    });
+  }
+  if (waterNames.length) {
+    map.addLayer({
+      ...common,
+      id: 'named-water-labels',
+      'source-layer': 'water_name',
+      filter: ['in', ['get', 'name'], ['literal', waterNames]],
+      layout: {
+        'symbol-placement': 'line-center',
+        'text-field': ['get', 'name'],
+        'text-font': ['Literata Italic'],
+        'text-size': 12.5,
+        'text-letter-spacing': 0.08,
+      },
+    });
+  }
+}
+
+function fadeWaterLabels(durationMs) {
+  for (const id of ['named-waterway-labels', 'named-water-labels']) {
+    if (!map.getLayer(id)) continue;
+    map.setPaintProperty(id, 'text-opacity-transition', {
+      duration: props.reducedMotion ? 300 : durationMs,
+    });
+    map.setPaintProperty(id, 'text-opacity', 0.65);
+  }
 }
 
 // Rivers move; showing that is true, not editorial. A slow dash-flow on
@@ -208,7 +271,15 @@ function walkTo(lngLatLike) {
           reprojectYou();
           return resolve();
         }
-        const dur = 2800;
+        // Walking-pace feel, scaled to the leg: short hops stay brisk, the
+        // longest leg tops out at 2s so a many-pin walk still completes
+        // within the closing run-out.
+        const meters =
+          Math.hypot(
+            (to.lat - from.lat) * 111_320,
+            (to.lng - from.lng) * 111_320 * Math.cos((from.lat * Math.PI) / 180),
+          ) || 0;
+        const dur = Math.min(2000, Math.max(700, meters * 1.6));
         const t0 = performance.now();
         const step = (now) => {
           const t = Math.min(1, (now - t0) / dur);
@@ -248,7 +319,9 @@ async function beginArrival() {
     return;
   }
   if (hasGeography()) {
+    addWaterLabels();
     setGroup('water', OPACITY.arrival.water, 2200);
+    fadeWaterLabels(2200);
     await wait(2400);
   } else {
     await wait(2400); // the same beat, visibly quiet — silence is choreography
@@ -426,29 +499,10 @@ async function exportPortrait({ dedication, tractLine, decades, totalUnits, vaca
   ctx.strokeRect(plate.x + 0.5, plate.y + 0.5, plate.w - 1, plate.h - 1);
 
   // Footer band: the decade columns in miniature — the built story at a
-  // glance, empty decades visibly empty.
+  // glance, empty decades visibly empty. Shared renderer with the colophon.
   if (decades?.length) {
     const band = { x: margin, y: plate.y + plate.h + 56, w: W - margin * 2, h: 130 };
-    const gap = 14;
-    const colW = (band.w - gap * (decades.length - 1)) / decades.length;
-    const maxCount = Math.max(1, ...decades.map((d) => d.count));
-    ctx.font = `11px ${tokens.sans}`;
-    decades.forEach((d, i) => {
-      const x = band.x + i * (colW + gap);
-      const hgt = (d.count / maxCount) * (band.h - 26);
-      ctx.fillStyle = tokens.eras[d.eraIndex];
-      ctx.fillRect(x, band.y + (band.h - 26) - hgt, colW, hgt);
-      ctx.strokeStyle = tokens.hairline;
-      ctx.beginPath();
-      ctx.moveTo(x, band.y + band.h - 25.5);
-      ctx.lineTo(x + colW, band.y + band.h - 25.5);
-      ctx.stroke();
-      ctx.fillStyle = tokens.ink;
-      ctx.globalAlpha = 0.62;
-      const label = d.start === null ? 'pre-’40' : `’${String(d.start).slice(2)}s`;
-      ctx.fillText(label, x, band.y + band.h - 8);
-      ctx.globalAlpha = 1;
-    });
+    drawColumnsFigure(ctx, { x: band.x, y: band.y, w: band.w, h: band.h, decades, tokens });
 
     ctx.font = `15px ${tokens.sans}`;
     ctx.fillStyle = tokens.ink;
@@ -459,13 +513,22 @@ async function exportPortrait({ dedication, tractLine, decades, totalUnits, vaca
     ctx.fillText(counts, margin, band.y + band.h + 44);
   }
 
+  // Required attribution: the map is ODbL-derived, the figures are Census.
+  ctx.font = `12px ${tokens.sans}`;
+  ctx.fillStyle = tokens.ink;
+  ctx.globalAlpha = 0.55;
+  ctx.fillText('© OpenStreetMap contributors · U.S. Census Bureau', margin, H - 40);
+  ctx.globalAlpha = 1;
+
   const a = document.createElement('a');
   a.href = out.toDataURL('image/png');
   a.download = `neighborhood-${props.dossier.tractCore.tract.geoid}.png`;
   a.click();
 }
 
-defineExpose({ beginArrival, beginWalking, addPins, walkTo, exportPortrait, failed });
+const youPosition = () => (youLngLat ? { lat: youLngLat.lat, lon: youLngLat.lng } : null);
+
+defineExpose({ beginArrival, beginWalking, addPins, walkTo, youPosition, exportPortrait, failed });
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
@@ -493,7 +556,7 @@ onMounted(() => {
     map = new maplibregl.Map({
       container: container.value,
       style,
-      bounds: tractBounds(props.dossier.tractCore.tract),
+      bounds: tractBounds(props.dossier.tractCore.tract, props.dossier.addressContext.anchor),
       fitBoundsOptions: { padding: 24 },
       interactive: false,
       attributionControl: { compact: true },
@@ -568,6 +631,8 @@ onUnmounted(() => {
   margin: -5.5px 0 0 -5.5px;
   border-radius: 50%;
   background: var(--ink);
+  /* paper halo: the dot survives dense grids */
+  box-shadow: 0 0 0 1.5px var(--paper);
   animation: you-breathe 3s ease-in-out infinite;
 }
 

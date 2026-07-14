@@ -51,6 +51,13 @@ for (const geoid of GEOIDS) {
   await new Promise((r) => setTimeout(r, 500));
   const youAtArrival = await page.evaluate(() => !!document.querySelector('.you-dot'));
   if (!youAtArrival) errors.push('you-dot missing at end of arrival');
+  // The establishing shot must contain the protagonist, with margin.
+  const dotPos = await page.evaluate(() => {
+    const r = document.querySelector('.you-dot')?.getBoundingClientRect();
+    return r ? { x: r.x, y: r.y, w: innerWidth, h: innerHeight } : null;
+  });
+  if (!dotPos || dotPos.x < 20 || dotPos.x > dotPos.w - 20 || dotPos.y < 20 || dotPos.y > dotPos.h - 20)
+    errors.push(`you-dot outside arrival viewport: ${JSON.stringify(dotPos)}`);
   await shot('1-arrival');
 
   const geom = await page.evaluate(() => {
@@ -114,10 +121,18 @@ for (const geoid of GEOIDS) {
   const pinCount = await page.evaluate(() => document.querySelectorAll('.map-pin').length);
   if (!pinCount) errors.push('no pins landed by the end of the walking movement');
 
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await new Promise((r) => setTimeout(r, 2600));
-  const closed = await page.evaluate(() => !!document.querySelector('.experience--closing'));
+  // Closing is dual-gated: sentinel passed AND the dot's walk has closed
+  // its loop — the walk takes real time, so wait for it.
+  await page.evaluate(() => {
+    const record = document.querySelector('.record');
+    window.scrollTo(0, record ? record.offsetTop - innerHeight : document.body.scrollHeight);
+  });
+  const closed = await page
+    .waitForSelector('.experience--closing', { timeout: 60_000 })
+    .then(() => true)
+    .catch(() => false);
   if (!closed) errors.push('closing never engaged at the end of the page');
+  await new Promise((r) => setTimeout(r, 1800));
   const youAtClose = await page.evaluate(() => !!document.querySelector('.you-dot'));
   if (!youAtClose) errors.push('you-dot missing at closing — it must never leave');
   await shot('6-closing');
@@ -130,6 +145,22 @@ for (const geoid of GEOIDS) {
   });
   await page.click('.save-button').catch(() => errors.push('save button unreachable'));
   await new Promise((r) => setTimeout(r, 1500));
+
+  // Desktop arrival: the anchor-containment bug only manifested at wide
+  // aspect ratios — assert the dot is in-viewport there too.
+  const desktop = await browser.newPage();
+  await desktop.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
+  await desktop.goto(`${BASE}/?geoid=${geoid}`, { waitUntil: 'networkidle2', timeout: 60_000 });
+  await desktop
+    .waitForFunction('window.__arrivalSettled === true', { timeout: 45_000 })
+    .catch(() => errors.push('desktop arrival never settled'));
+  const dotDesktop = await desktop.evaluate(() => {
+    const r = document.querySelector('.you-dot')?.getBoundingClientRect();
+    return r ? { x: r.x, y: r.y, w: innerWidth, h: innerHeight } : null;
+  });
+  if (!dotDesktop || dotDesktop.x < 20 || dotDesktop.x > dotDesktop.w - 20 || dotDesktop.y < 20 || dotDesktop.y > dotDesktop.h - 20)
+    errors.push(`you-dot outside DESKTOP arrival viewport: ${JSON.stringify(dotDesktop)}`);
+  await desktop.close();
 
   console.log(`${geoid}: pins=${pinCount} errors=${errors.length}`);
   for (const e of errors) console.log(`  ! ${e}`);

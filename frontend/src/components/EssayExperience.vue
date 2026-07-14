@@ -5,6 +5,7 @@ import { decadesFrom } from '../lib/stock.js';
 import { useReducedMotion, observeReveals } from '../lib/motion.js';
 import MapStage from './MapStage.vue';
 import StockField from './StockField.vue';
+import TheRecord from './TheRecord.vue';
 
 const props = defineProps({
   geoid: { type: String, required: true },
@@ -29,7 +30,11 @@ const flipDone = ref(!props.fromRect);
 const ritualStep = ref(0); // 1: tract line, 2: "Reading the record."
 const mapSettled = ref(false);
 const receded = ref(false);
-const closing = ref(false);
+const scrollArmed = ref(false); // reader has passed the closing sentinel
+const dotHome = ref(false); // the walk's final leg has returned to the anchor
+// The chrome recedes only when BOTH are true: the reader is at the page's
+// end AND the walk has closed its loop.
+const closing = computed(() => scrollArmed.value && dotHome.value);
 const mapStage = ref(null);
 
 const tractLine = computed(() => {
@@ -126,15 +131,29 @@ function resolvePins(names) {
 
 // Strict Walking sequence: map fully back → radius drawn → paragraph and
 // its pins → the you-dot sets off toward them. Nothing lands early.
+// Pins are visited nearest-next from wherever the dot stands, so the walk
+// never zigzags; after the LAST paragraph the dot walks home and only
+// then may the chrome recede — the loop always closes.
 function dropPinsFor(idx) {
   const pins = resolvePins(walkingParagraphs.value[idx]?.pins).filter((p) => p.lat != null);
-  if (!pins.length) return;
-  mapStage.value.addPins(pins);
-  const centroid = {
-    lat: pins.reduce((s, p) => s + p.lat, 0) / pins.length,
-    lon: pins.reduce((s, p) => s + p.lon, 0) / pins.length,
-  };
-  mapStage.value.walkTo(centroid); // the reader accompanies themselves
+  const dist = (a, b) => Math.hypot(a.lat - b.lat, (a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180));
+  if (pins.length) {
+    let from = mapStage.value.youPosition() ?? dossier.addressContext.anchor;
+    const remaining = [...pins];
+    const ordered = [];
+    while (remaining.length) {
+      remaining.sort((a, b) => dist(from, a) - dist(from, b));
+      from = remaining.shift();
+      ordered.push(from);
+    }
+    mapStage.value.addPins(ordered);
+    for (const pin of ordered) mapStage.value.walkTo(pin); // the reader accompanies themselves
+  }
+  if (idx === walkingParagraphs.value.length - 1) {
+    mapStage.value.walkTo(dossier.addressContext.anchor).then(() => {
+      dotHome.value = true; // the walk ends at home
+    });
+  }
 }
 
 async function startWalking() {
@@ -151,10 +170,11 @@ function setupSectionObservers() {
   sectionIO = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        // The chrome recedes only when the reader has scrolled a full quiet
-        // screen past the final line — and returns if they scroll back up.
+        // Armed when the reader has scrolled a full quiet screen past the
+        // final line — and STAYS armed below it (the colophon lives past
+        // the sentinel); disarms only on scrolling back above.
         if (e.target === closingSentinel.value) {
-          closing.value = e.isIntersecting;
+          scrollArmed.value = e.isIntersecting || e.boundingClientRect.top < 0;
           continue;
         }
         if (!e.isIntersecting) continue;
@@ -200,6 +220,13 @@ function setupSectionObservers() {
     { rootMargin: '0px 0px -18% 0px' },
   );
   for (const el of walkingEl.value?.querySelectorAll('[data-para]') ?? []) pinIO.observe(el);
+}
+
+const recordEl = ref(null);
+function scrollToRecord() {
+  recordEl.value?.$el?.scrollIntoView({
+    behavior: reducedMotion.value ? 'auto' : 'smooth',
+  });
 }
 
 function savePortrait() {
@@ -288,12 +315,19 @@ onUnmounted(() => {
       </div>
     </article>
 
+    <!-- Back matter: below the closing sentinel, on its own paper. -->
+    <TheRecord ref="recordEl" :dossier="dossier" />
+
     <!-- The shareable portrait: dedication over accumulated evidence. -->
     <div class="closing-overlay" :class="{ 'closing-overlay--in': closing }">
       <p class="closing-dedication">{{ addressText }}</p>
       <p class="label">{{ tractLine }}</p>
       <button v-if="closing" class="save-button label" type="button" @click="savePortrait">
         Save this page
+      </button>
+      <p class="closing-attribution">© OpenStreetMap contributors · U.S. Census Bureau</p>
+      <button class="record-affordance label" type="button" @click="scrollToRecord">
+        The Record ↓
       </button>
     </div>
 
@@ -444,6 +478,33 @@ onUnmounted(() => {
   align-self: flex-start;
   padding: var(--space-1) 0;
   border-bottom: 1px solid var(--hairline);
+  color: var(--ink);
+}
+
+/* ODbL requires this on the shared state; quiet, not invisible. */
+.closing-attribution {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  color: var(--ink-soft);
+  margin: var(--space-2) 0 0;
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  margin-left: -0.35rem;
+}
+
+/* The back matter's one discoverable affordance — present, never shouting. */
+.record-affordance {
+  align-self: flex-start;
+  margin-top: var(--space-1);
+  color: var(--ink-faint);
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  padding: 0.1rem 0.35rem;
+  margin-left: -0.35rem;
+}
+
+.record-affordance:hover,
+.record-affordance:focus-visible {
   color: var(--ink);
 }
 

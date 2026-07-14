@@ -31,10 +31,11 @@
   --era-8: #a9b1a6;  /* 2010s */
   --era-9: #aab8b4;  /* 2020s */
 
-  /* Typography. Book serif for essay prose and the dedication; a small
-     utility sans for labels and counters. */
-  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
-    Georgia, 'Times New Roman', serif;
+  /* Typography. Literata (self-hosted, OFL) is the essay's own voice — the
+     essay must render identically on macOS, Windows, Android. The old
+     system stack remains as fallback; utility sans stays system. */
+  --serif: 'Literata', 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    'Book Antiqua', Georgia, 'Times New Roman', serif;
   --sans: ui-sans-serif, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
 
   --text-body: 1.0625rem;      /* 17px at default root */
