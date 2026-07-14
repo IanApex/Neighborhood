@@ -21,6 +21,14 @@ const TRACT_CACHE_TTL = 60 * 60 * 24 * 30; // tractCore+essay: 30 days
 const OVERPASS_CACHE_TTL = 60 * 60 * 24 * 30; // Overpass etiquette at the edge
 const RATE_LIMIT_PER_MINUTE = 5; // a few essays per minute is plenty
 
+// ~200m grid cell (1/500° ≈ 220m). Shared by the Overpass cache AND the
+// tract/essay cache: the essay's walking prose is synthesized from the
+// requesting address's amenities, so a cached essay is only valid for
+// addresses in the same walkshed cell — a different address in the same
+// tract gets its own synthesis.
+const gridCell = ({ lat, lon }) =>
+  `${(Math.round(lat * 500) / 500).toFixed(3)},${(Math.round(lon * 500) / 500).toFixed(3)}`;
+
 export default {
   async fetch(request, env, ctx) {
     // The spike's fetch modules read process.env — populate it from bindings.
@@ -84,9 +92,11 @@ export default {
       ? { ...geo.location, source: 'input-point' }
       : { ...tract.centroid, source: 'tract-centroid' };
 
-    // 2/3. tractCore + essay: KV by GEOID; on miss run the pipeline + synthesize.
+    // 2/3. tractCore + essay: KV by GEOID + anchor grid cell; on miss run
+    // the pipeline + synthesize.
     const started = Date.now();
-    let cached = await env.ESSAYS.get(`tract:${tract.geoid}`, 'json');
+    const tractKey = `tract:${tract.geoid}:${gridCell(anchor)}`;
+    let cached = await env.ESSAYS.get(tractKey, 'json');
 
     // 4. addressContext is ALWAYS fresh (per-address by design) — start it in
     //    parallel with whatever else we need. Amenities may be null; the
@@ -142,7 +152,7 @@ export default {
       essay = result.essay;
 
       ctx.waitUntil(
-        env.ESSAYS.put(`tract:${tract.geoid}`, JSON.stringify({ tractCore, essay }), {
+        env.ESSAYS.put(tractKey, JSON.stringify({ tractCore, essay }), {
           expirationTtl: TRACT_CACHE_TTL,
         }),
       );
@@ -172,11 +182,10 @@ function assembleDossier(env, geo, tract, tractCore, anchor, amenities) {
   };
 }
 
-// Overpass etiquette at the edge: cache responses in KV keyed by a ~200m
-// grid cell + radius, TTL ~30 days.
+// Overpass etiquette at the edge: cache responses in KV keyed by the shared
+// ~200m grid cell + radius, TTL ~30 days.
 async function fetchAmenitiesCached(env, ctx, anchor) {
-  const grid = (v) => (Math.round(v * 500) / 500).toFixed(3); // 1/500° ≈ 220m
-  const key = `overpass:${grid(anchor.lat)},${grid(anchor.lon)}:1200`;
+  const key = `overpass:${gridCell(anchor)}:1200`;
   const hit = await env.ESSAYS.get(key, 'json');
   if (hit) return hit;
   const amenities = await fetchAmenities(anchor);

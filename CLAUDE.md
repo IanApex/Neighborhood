@@ -149,15 +149,23 @@ as it's ratified; the loader treats both identically.
 
 The live pipeline is a Cloudflare Worker (`POST /essay`, plus `POST /geocode`
 for the ritual's honest first line). Flow: geocode (Census geocoder is
-server-side only — no CORS — which is why this exists) → KV lookup by GEOID
-for `{tractCore, essay}` → on miss, run the existing `src/` fetch modules
-(they are imported directly; `process.env` is populated from bindings) and
-synthesize with `claude-sonnet-4-6` (prompt cached static rules from
+server-side only — no CORS — which is why this exists) → KV lookup of
+`{tractCore, essay}` keyed by **GEOID + the anchor's ~200m grid cell** → on
+miss, run the existing `src/` fetch modules (they are imported directly;
+`process.env` is populated from bindings) and synthesize with
+`claude-sonnet-4-6` (prompt cached static rules from
 `prompts/synthesis-prompt.md`, bundled at build time — never a divergent
 copy; trimmed dossier via `synthesisView`) → validate the movement schema,
-one corrective retry, structured error on second failure. addressContext is
-ALWAYS generated fresh (per-address by design, never cached with the tract);
-Overpass responses have their own KV cache (~200m grid key, 30-day TTL).
+one corrective retry, structured error on second failure.
+
+Why the grid cell is in the essay's cache key: the essay's walking prose is
+synthesized from the requesting address's amenities, so an essay cached by
+GEOID alone would hand a different address in the same tract another
+walkshed's prose. The same `gridCell()` (1/500° ≈ 220m) keys the Overpass
+response cache — one function, shared, in `worker/src/index.js`.
+addressContext itself is still ALWAYS generated fresh per request (from the
+grid-cached Overpass response); it is per-address by design and never
+stored with the tract entry.
 
 **Fixture-parity rule: live responses must always match the fixture shape.**
 The frontend loader must not care whether data came from
