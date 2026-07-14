@@ -125,7 +125,7 @@ function setupSectionObservers() {
     (entries) => {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
-        if (e.target === stockEl.value?.$el) receded.value = true;
+        if (e.target === stockEl.value) receded.value = true;
         if (e.target === walkingEl.value) {
           receded.value = false;
           if (!walkingStarted) {
@@ -138,7 +138,7 @@ function setupSectionObservers() {
     },
     { threshold: 0.05 },
   );
-  if (stockEl.value?.$el) sectionIO.observe(stockEl.value.$el);
+  if (stockEl.value) sectionIO.observe(stockEl.value);
   if (walkingEl.value) sectionIO.observe(walkingEl.value);
   if (closingEl.value) sectionIO.observe(closingEl.value);
 
@@ -165,10 +165,14 @@ function savePortrait() {
   });
 }
 
-onMounted(async () => {
+onMounted(() => {
   window.scrollTo(0, 0);
-  setupSectionObservers();
-  runRitual();
+  runRitual(); // the essay always composes, whatever else fails
+  try {
+    setupSectionObservers();
+  } catch (err) {
+    console.error('section observers failed', err);
+  }
 });
 
 onUnmounted(() => {
@@ -203,14 +207,14 @@ onUnmounted(() => {
       </section>
 
       <!-- BUILT + HOME — the stock field owns this whole block. -->
-      <StockField
-        v-if="built && home"
-        ref="stockEl"
-        :dossier="dossier"
-        :essay-built="built"
-        :essay-home="home"
-        :reduced-motion="reducedMotion"
-      />
+      <div v-if="built && home" ref="stockEl">
+        <StockField
+          :dossier="dossier"
+          :essay-built="built"
+          :essay-home="home"
+          :reduced-motion="reducedMotion"
+        />
+      </div>
 
       <!-- WALKING — second person; the map returns to their point. -->
       <section v-if="walking" ref="walkingEl" class="movement movement--walking" aria-label="Walking">

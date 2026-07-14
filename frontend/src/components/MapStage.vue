@@ -67,22 +67,27 @@ function setGroup(group, opacity, durationMs) {
   }
 }
 
-function prepareStyle() {
-  for (const layer of map.getStyle().layers) {
+// Rewrite the style BEFORE the first frame paints: the page must open as
+// blank paper, never flash the source basemap. (Recoloring after `load`
+// leaves a beat where positron's own colors are visible.)
+function transformStyle(next) {
+  const layers = next.layers.map((layer) => {
     const group = classify(layer);
+    const copy = { ...layer, paint: { ...(layer.paint ?? {}) }, layout: { ...(layer.layout ?? {}) } };
     if (group === 'background') {
-      map.setPaintProperty(layer.id, 'background-color', tokens.paper);
+      copy.paint['background-color'] = tokens.paper;
     } else if (group === 'hide') {
-      map.setLayoutProperty(layer.id, 'visibility', 'none');
+      copy.layout.visibility = 'none';
     } else if (group === 'water') {
-      if (layer.type === 'fill') map.setPaintProperty(layer.id, 'fill-color', tokens.water);
-      if (layer.type === 'line') map.setPaintProperty(layer.id, 'line-color', tokens.water);
-      map.setPaintProperty(layer.id, opacityProp[layer.type], 0);
+      copy.paint[`${layer.type}-color`] = tokens.water;
+      copy.paint[opacityProp[layer.type]] = 0;
     } else if (group === 'road') {
-      map.setPaintProperty(layer.id, 'line-color', tokens.ink);
-      map.setPaintProperty(layer.id, 'line-opacity', 0);
+      copy.paint['line-color'] = tokens.ink;
+      copy.paint['line-opacity'] = 0;
     }
-  }
+    return copy;
+  });
+  return { ...next, layers };
 }
 
 const wait = (ms) => new Promise((r) => setTimeout(r, props.reducedMotion ? Math.min(ms, 350) : ms));
@@ -210,30 +215,46 @@ function exportPortrait({ dedication, tractLine }) {
 
 defineExpose({ beginArrival, beginWalking, addPins, exportPortrait, failed });
 
+const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+
 onMounted(() => {
   readTokens();
-  map = new maplibregl.Map({
-    container: container.value,
-    style: 'https://tiles.openfreemap.org/styles/positron',
-    bounds: tractBounds(props.dossier.tractCore.tract),
-    fitBoundsOptions: { padding: 24 },
-    interactive: false,
-    attributionControl: { compact: true },
-    preserveDrawingBuffer: true,
-    fadeDuration: 0,
-  });
-  map.on('idle', () => (window.__mapIdle = true)); // smoke-test hook
+  let resolveStyle;
+  let rejectStyle;
   styleReady = new Promise((resolve, reject) => {
-    map.on('load', () => {
-      prepareStyle();
-      resolve();
-    });
-    map.on('error', (e) => {
-      failed.value = true;
-      reject(e);
-    });
+    resolveStyle = resolve;
+    rejectStyle = reject;
   });
   styleReady.catch(() => {}); // handled at call sites
+
+  (async () => {
+    let style;
+    try {
+      const resp = await fetch(STYLE_URL);
+      if (!resp.ok) throw new Error(`style HTTP ${resp.status}`);
+      style = transformStyle(await resp.json());
+    } catch (err) {
+      failed.value = true; // tiles unreachable: the essay proceeds on paper
+      rejectStyle(err);
+      return;
+    }
+    map = new maplibregl.Map({
+      container: container.value,
+      style,
+      bounds: tractBounds(props.dossier.tractCore.tract),
+      fitBoundsOptions: { padding: 24 },
+      interactive: false,
+      attributionControl: { compact: true },
+      preserveDrawingBuffer: true,
+      fadeDuration: 0,
+    });
+    map.on('idle', () => (window.__mapIdle = true)); // smoke-test hook
+    map.on('load', resolveStyle);
+    map.on('error', (e) => {
+      failed.value = true;
+      rejectStyle(e);
+    });
+  })();
 });
 
 onUnmounted(() => {
