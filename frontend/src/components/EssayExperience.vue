@@ -93,7 +93,7 @@ async function runRitual() {
 // ——— movement transitions (IntersectionObserver only) ———
 const stockEl = ref(null);
 const walkingEl = ref(null);
-const closingEl = ref(null);
+const closingSentinel = ref(null);
 let sectionIO = null;
 let pinIO = null;
 let walkingStarted = false;
@@ -124,6 +124,12 @@ function setupSectionObservers() {
   sectionIO = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
+        // The chrome recedes only when the reader has scrolled a full quiet
+        // screen past the final line — and returns if they scroll back up.
+        if (e.target === closingSentinel.value) {
+          closing.value = e.isIntersecting;
+          continue;
+        }
         if (!e.isIntersecting) continue;
         if (e.target === stockEl.value) receded.value = true;
         if (e.target === walkingEl.value) {
@@ -133,14 +139,13 @@ function setupSectionObservers() {
             mapStage.value.beginWalking();
           }
         }
-        if (e.target === closingEl.value) closing.value = true;
       }
     },
     { threshold: 0.05 },
   );
   if (stockEl.value) sectionIO.observe(stockEl.value);
   if (walkingEl.value) sectionIO.observe(walkingEl.value);
-  if (closingEl.value) sectionIO.observe(closingEl.value);
+  if (closingSentinel.value) sectionIO.observe(closingSentinel.value);
 
   // Pins appear in sync with their paragraph's reveal. Only named,
   // coordinate-bearing examples are ever plotted.
@@ -228,8 +233,11 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <!-- CLOSING — the chrome recedes; the finished page remains. -->
-      <div ref="closingEl" class="closing-space" aria-hidden="true"></div>
+      <!-- CLOSING — a quiet run-out after the final line; only when the
+           reader reaches its end does the chrome recede. -->
+      <div class="closing-space" aria-hidden="true">
+        <div ref="closingSentinel" class="closing-sentinel"></div>
+      </div>
     </article>
 
     <!-- The shareable portrait: dedication over accumulated evidence. -->
@@ -306,6 +314,9 @@ onUnmounted(() => {
 /* ——— movements ——— */
 .movement {
   padding: var(--space-5) var(--space-3);
+  /* positioned so movement prose always paints above the (positioned)
+     sticky stock canvas that precedes it in the document */
+  position: relative;
 }
 
 .movement--arrival {
@@ -338,7 +349,14 @@ onUnmounted(() => {
 }
 
 .closing-space {
-  height: 110dvh;
+  height: 130dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.closing-sentinel {
+  height: 1px;
 }
 
 /* ——— closing portrait ——— */

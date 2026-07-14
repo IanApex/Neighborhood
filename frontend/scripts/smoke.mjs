@@ -97,8 +97,21 @@ for (const geoid of GEOIDS) {
   await shot('5-walking');
   const pinCount = await page.evaluate(() => document.querySelectorAll('.map-pin').length);
 
+  // While the final walking paragraph is on screen the essay must still be
+  // readable — closing may only engage a full quiet screen later.
+  await page.evaluate(() => {
+    const walking = document.querySelector('.movement--walking');
+    window.scrollTo(0, walking.offsetTop + walking.offsetHeight - window.innerHeight + 40);
+  });
+  await new Promise((r) => setTimeout(r, 1200));
+  const prematureClose = await page.evaluate(() => !!document.querySelector('.experience--closing'));
+  if (prematureClose) errors.push('closing engaged while the last walking paragraph was on screen');
+  await shot('5b-walking-end');
+
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await new Promise((r) => setTimeout(r, 2600));
+  const closed = await page.evaluate(() => !!document.querySelector('.experience--closing'));
+  if (!closed) errors.push('closing never engaged at the end of the page');
   await shot('6-closing');
 
   // The portrait export must not throw (download itself is browser-side).
