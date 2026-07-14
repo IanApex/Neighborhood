@@ -34,7 +34,7 @@
       "paragraphs": [
         { "text": "Within a fifteen-minute walk of your address the map holds 126 features. What the record shows most of is congregations — some two dozen mapped places of worship, more than any other kind of gathering place here.", "pins": [] },
         { "text": "Food is close and practical: a bakery café called On the Rise, Wonder Foods, Farmer John Food Center, Harding Market.", "pins": ["On the Rise Bakery & Cafe", "Wonder Foods Supermarket", "Farmer John Food Center", "Harding Market"] },
-        { "text": "There are eight parks in the radius, a college, four schools. You pass more churches than storefronts on the way home.", "pins": ["Louis' Convenience Store", "Rock City Eats & Sweets"] }
+        { "text": "There are eight parks in the radius, a college, four schools. You pass more churches than storefronts on the way home.", "pins": [] }
       ]
     }
   ]

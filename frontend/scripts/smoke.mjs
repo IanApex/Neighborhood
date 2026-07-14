@@ -49,6 +49,8 @@ for (const geoid of GEOIDS) {
     .catch(() => errors.push('arrival never settled'));
   await page.waitForFunction('window.__mapIdle === true', { timeout: 30_000 }).catch(() => {});
   await new Promise((r) => setTimeout(r, 500));
+  const youAtArrival = await page.evaluate(() => !!document.querySelector('.you-dot'));
+  if (!youAtArrival) errors.push('you-dot missing at end of arrival');
   await shot('1-arrival');
 
   const geom = await page.evaluate(() => {
@@ -72,7 +74,7 @@ for (const geoid of GEOIDS) {
   } else {
     const settle = (ms = 2200) => new Promise((r) => setTimeout(r, ms));
     const counter = () =>
-      page.evaluate(() => document.querySelector('.stock-counter')?.textContent.trim());
+      page.evaluate(() => document.querySelector('.stock-playhead-year')?.textContent.trim());
 
     // Mid-1950s-ish and the Detroit 1970s void (unit index 4 of 10).
     await page.evaluate((y) => window.scrollTo(0, y), geom.stockTop + geom.trackH * 0.28);
@@ -112,11 +114,18 @@ for (const geoid of GEOIDS) {
   await new Promise((r) => setTimeout(r, 2600));
   const closed = await page.evaluate(() => !!document.querySelector('.experience--closing'));
   if (!closed) errors.push('closing never engaged at the end of the page');
+  const youAtClose = await page.evaluate(() => !!document.querySelector('.you-dot'));
+  if (!youAtClose) errors.push('you-dot missing at closing — it must never leave');
   await shot('6-closing');
 
-  // The portrait export must not throw (download itself is browser-side).
+  // The portrait export: capture the actual composed PNG for review.
+  const cdp = await page.createCDPSession();
+  await cdp.send('Browser.setDownloadBehavior', {
+    behavior: 'allow',
+    downloadPath: (await import('node:path')).resolve(outDir),
+  });
   await page.click('.save-button').catch(() => errors.push('save button unreachable'));
-  await new Promise((r) => setTimeout(r, 800));
+  await new Promise((r) => setTimeout(r, 1500));
 
   console.log(`${geoid}: pins=${pinCount} errors=${errors.length}`);
   for (const e of errors) console.log(`  ! ${e}`);

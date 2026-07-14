@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { fixtureFor } from '../fixtures/index.js';
+import { decadesFrom } from '../lib/stock.js';
 import { useReducedMotion, observeReveals } from '../lib/motion.js';
 import MapStage from './MapStage.vue';
 import StockField from './StockField.vue';
@@ -93,10 +94,13 @@ async function runRitual() {
 // ——— movement transitions (IntersectionObserver only) ———
 const stockEl = ref(null);
 const walkingEl = ref(null);
+const walkPrepSentinel = ref(null);
 const closingSentinel = ref(null);
+const walkingReady = ref(false); // beginWalking's promise has resolved
 let sectionIO = null;
 let pinIO = null;
 let walkingStarted = false;
+let pendingPinParas = []; // paragraphs seen before the map was back
 
 const walkingParagraphs = computed(() => {
   if (walking?.paragraphs?.length) return walking.paragraphs;
@@ -120,6 +124,29 @@ function resolvePins(names) {
     .filter(Boolean);
 }
 
+// Strict Walking sequence: map fully back → radius drawn → paragraph and
+// its pins → the you-dot sets off toward them. Nothing lands early.
+function dropPinsFor(idx) {
+  const pins = resolvePins(walkingParagraphs.value[idx]?.pins).filter((p) => p.lat != null);
+  if (!pins.length) return;
+  mapStage.value.addPins(pins);
+  const centroid = {
+    lat: pins.reduce((s, p) => s + p.lat, 0) / pins.length,
+    lon: pins.reduce((s, p) => s + p.lon, 0) / pins.length,
+  };
+  mapStage.value.walkTo(centroid); // the reader accompanies themselves
+}
+
+async function startWalking() {
+  if (walkingStarted) return;
+  walkingStarted = true;
+  receded.value = false;
+  await mapStage.value.beginWalking();
+  walkingReady.value = true;
+  for (const idx of pendingPinParas) dropPinsFor(idx);
+  pendingPinParas = [];
+}
+
 function setupSectionObservers() {
   sectionIO = new IntersectionObserver(
     (entries) => {
@@ -132,13 +159,7 @@ function setupSectionObservers() {
         }
         if (!e.isIntersecting) continue;
         if (e.target === stockEl.value) receded.value = true;
-        if (e.target === walkingEl.value) {
-          receded.value = false;
-          if (!walkingStarted) {
-            walkingStarted = true;
-            mapStage.value.beginWalking();
-          }
-        }
+        if (e.target === walkingEl.value) startWalking(); // safety net
       }
     },
     { threshold: 0.05 },
@@ -147,14 +168,31 @@ function setupSectionObservers() {
   if (walkingEl.value) sectionIO.observe(walkingEl.value);
   if (closingSentinel.value) sectionIO.observe(closingSentinel.value);
 
-  // Pins appear in sync with their paragraph's reveal. Only named,
-  // coordinate-bearing examples are ever plotted.
+  // The map's return takes ~4.4s, so it's armed a full viewport before the
+  // Walking section arrives — the reader should never see it mid-turn.
+  const prepIO = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          startWalking();
+          prepIO.disconnect();
+        }
+      }
+    },
+    { rootMargin: '0px 0px 100% 0px' },
+  );
+  if (walkPrepSentinel.value) prepIO.observe(walkPrepSentinel.value);
+
+  // Pins appear in sync with the sentence that names them — and never
+  // before the map has fully returned. Only named, coordinate-bearing
+  // examples are ever plotted.
   pinIO = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         const idx = Number(e.target.dataset.para);
-        mapStage.value.addPins(resolvePins(walkingParagraphs.value[idx]?.pins));
+        if (walkingReady.value) dropPinsFor(idx);
+        else pendingPinParas.push(idx);
         pinIO.unobserve(e.target);
       }
     },
@@ -164,9 +202,15 @@ function setupSectionObservers() {
 }
 
 function savePortrait() {
+  const yearBuilt = dossier.tractCore.layers.yearBuilt;
+  const tenure = dossier.tractCore.layers.core?.tenure;
+  const totalUnits = yearBuilt?.totalUnits ?? 0;
   mapStage.value.exportPortrait({
     dedication: props.addressText,
     tractLine: tractLine.value,
+    decades: decadesFrom(yearBuilt),
+    totalUnits,
+    vacancy: tenure?.totalOccupied != null ? Math.max(0, totalUnits - tenure.totalOccupied) : 0,
   });
 }
 
@@ -221,12 +265,15 @@ onUnmounted(() => {
         />
       </div>
 
-      <!-- WALKING — second person; the map returns to their point. -->
+      <!-- WALKING — second person; the map returns to their point. Nothing
+           reveals, no pin drops, until that return has fully completed. -->
+      <div ref="walkPrepSentinel" aria-hidden="true"></div>
       <section v-if="walking" ref="walkingEl" class="movement movement--walking" aria-label="Walking">
         <div
           v-for="(para, i) in walkingParagraphs"
           :key="i"
           class="prose-card prose-card--walking"
+          :class="{ 'prose-card--held': !walkingReady }"
           :data-para="i"
         >
           <p class="reveal">{{ para.text }}</p>

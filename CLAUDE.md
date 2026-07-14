@@ -121,6 +121,24 @@ All movements except Built use simple IntersectionObserver reveals.
 prefers-reduced-motion swaps Built's scrub for per-decade small multiples
 and every entrance for a plain fade — same truth, print form.
 
+Standing rules from the phase-3 review:
+
+- **The you-dot** — a small breathing ink dot at addressContext.anchor, the
+  essay's protagonist. It appears as the LAST thing arrival draws and is
+  never removed and never labeled: full opacity through the recede (it
+  lives outside the fading map canvas), walking a dotted trail toward each
+  paragraph's pins in Walking, present in the portrait. Reduced motion
+  renders it as a static ring.
+- **Marks never move.** The Home transition changes fills in place inside
+  the decade columns — vacancy drains to outline, era tint crossfades to
+  tenure tone. No position interpolation, ever. The homes didn't go
+  anywhere; neither do the marks.
+- **The tiles already hold buildings and parks.** Don't hide them: building
+  fill is faint undated ink (never era-colored — we don't know building
+  ages), surfacing as Built begins; park green arrives with the walk
+  radius. Waterway lines carry a slow dash-flow (rivers move; showing that
+  is true, not editorial).
+
 Frontend fixtures pair `frontend/src/fixtures/dossier-<GEOID>.json` with
 `frontend/src/fixtures/essays/essay-<GEOID>.json` by GEOID. The committed
 essay JSONs are PLACEHOLDERS (marked `"placeholder": true`) written under

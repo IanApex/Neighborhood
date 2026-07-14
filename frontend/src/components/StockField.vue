@@ -4,14 +4,14 @@
 // it — marks are never bound raw to scrollY, so a fast scroll reads as a
 // graceful time-lapse, not a strobe.
 //
-// Equal scroll distance per decade is structural: the track height is
-// (number of decade units) × one unit height, whether a decade holds 1,404
-// units or zero. In the hard tract the reader scrolls the whole 1970s and
-// only the year moves. That is the thesis in physics.
+// The field is DECADE COLUMNS, one per unit, each filling bottom-up as its
+// decade passes. Equal scroll distance per decade is structural, and the
+// void has a shape: the hard tract's 1970s is an empty, labeled column the
+// reader watches stay empty while the year ticks.
 //
-// Home reuses the SAME marks: they release from the chronological sediment
-// and resettle into a plain ordered field; vacancy hollows a seeded, stable
-// subset to outlines. Aggregate truth only — never on the map.
+// THE MARKS NEVER MOVE. Home happens in place: vacancy marks drain their
+// fill to an outline (seeded, stable), the rest crossfade era tint →
+// tenure tone. The homes didn't go anywhere; neither do the marks.
 
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { decadesFrom, marksFrom, progressToYear } from '../lib/stock.js';
@@ -60,8 +60,6 @@ const checkpoints = computed(() => {
 });
 
 // Fraction of the built track at which a checkpoint's decade completes.
-// The paragraph sits at that offset so the reader scrolls the data first
-// and meets the language after.
 function checkpointOffset(cp) {
   const idx = decades.findIndex((d) => cp.afterYear <= d.end + 0.001);
   const unit = idx === -1 ? decades.length - 1 : idx;
@@ -77,6 +75,7 @@ const canvasEl = ref(null);
 const counterText = ref(decades[0]?.display ?? '');
 const railProgress = ref(0);
 const settleUi = ref(0); // mirrors `settle` for template bindings
+const homeCount = ref(0); // marks standing so far — "N homes"
 
 let ctx = null;
 let dpr = 1;
@@ -85,12 +84,16 @@ let h = 0;
 let raf = 0;
 let currentYear = 1899;
 let targetYear = 1899;
-let settle = 0; // 0 = chronological sediment, 1 = ordered home field
+let settle = 0; // 0 = era tints, 1 = tenure fills (drain complete)
 let settleTarget = 0;
 let colors = null;
 let builtTrackH = 1;
-let cell = 6;
-let cols = 10;
+let cell = 4;
+let posX = null;
+let posY = null;
+let columns = []; // {x, baseY, w, label} for hairlines + base labels
+let washRect = null; // paper wash behind the column field only
+let sortedYears = null;
 
 const FIRST_YEAR = 1899;
 const LAST_YEAR = decades[decades.length - 1]?.end ?? 2024;
@@ -103,11 +106,19 @@ function readColors() {
     owner: v('--owner'),
     renter: v('--renter'),
     ink: v('--ink'),
+    inkSoft: 'rgba(33, 29, 24, 0.62)',
     inkFaint: v('--ink-faint'),
+    hairline: v('--hairline'),
     paper: v('--paper'),
+    sans: v('--sans'),
   };
 }
 
+const columnLabel = (d) => (d.start === null ? 'pre-1940' : `’${String(d.start).slice(2)}s`);
+
+// One column per decade unit; on narrow screens two rows of five. Cell size
+// is uniform across columns — one mark is one home, everywhere — sized so
+// the fullest decade fits its column.
 function layout() {
   const rect = canvasEl.value.getBoundingClientRect();
   dpr = window.devicePixelRatio || 1;
@@ -117,49 +128,103 @@ function layout() {
   canvasEl.value.height = Math.round(h * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // Grid that fits every unit: cell size from available area, small floor.
-  const usable = w * h * 0.6;
-  cell = Math.max(3, Math.floor(Math.sqrt(usable / Math.max(1, marks.length))));
-  cols = Math.max(4, Math.floor((w - 32) / cell));
+  const n = decades.length;
+  const top = 76;
+  const captionH = 92;
+  const areaX = 16;
+  const areaW = w - areaX - 52; // rail keeps the right edge
+  const rows = w < 640 && n > 6 ? 2 : 1;
+  const perRow = Math.ceil(n / rows);
+  const gap = 10;
+  const labelH = 20;
+  const rowH = (h - top - captionH) / rows;
+  const colW = (areaW - (perRow - 1) * gap) / perRow;
+  const colInnerH = rowH - labelH - 12;
+
+  const maxCount = Math.max(1, ...decades.map((d) => d.count));
+  cell = Math.max(2, Math.min(9, Math.floor(Math.sqrt((colW * colInnerH) / maxCount))));
+  while (cell > 2 && Math.ceil(maxCount / Math.max(1, Math.floor(colW / cell))) * cell > colInnerH) cell--;
+  const cellCols = Math.max(1, Math.floor(colW / cell));
+
+  columns = decades.map((d) => {
+    const r = Math.floor(d.unitIndex / perRow);
+    const k = d.unitIndex % perRow;
+    return {
+      x: areaX + k * (colW + gap),
+      baseY: top + (r + 1) * rowH - labelH - 6,
+      w: colW,
+      label: columnLabel(d),
+    };
+  });
+
+  washRect = { x: areaX - 10, y: top - 14, w: areaW + 20, h: rows * rowH + 22 };
+
+  posX = new Float32Array(marks.length);
+  posY = new Float32Array(marks.length);
+  const perDecade = new Array(decades.length).fill(0);
+  for (let i = 0; i < marks.length; i++) {
+    const u = marks[i].unitIndex;
+    const j = perDecade[u]++;
+    const col = columns[u];
+    posX[i] = col.x + (j % cellCols) * cell;
+    posY[i] = col.baseY - (Math.floor(j / cellCols) + 1) * cell;
+  }
+  sortedYears = marks.map((m) => m.year); // marks are already year-sorted
+
   builtTrackH = builtTrackEl.value?.offsetHeight ?? 1;
-}
-
-function slotPos(i) {
-  return { x: 16 + (i % cols) * cell, row: Math.floor(i / cols) };
-}
-
-// Built: sediment fills bottom-up in chronological order.
-// Home: the same grid read top-down — a plain ordered field.
-function markPositions(i) {
-  const p = slotPos(i);
-  return {
-    bx: p.x,
-    by: h - 96 - (p.row + 1) * cell,
-    hx: p.x,
-    hy: 112 + p.row * cell,
-  };
 }
 
 const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
+function visibleCount(year) {
+  let lo = 0;
+  let hi = sortedYears.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sortedYears[mid] <= year) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 function draw() {
   ctx.clearRect(0, 0, w, h);
   const s = easeInOut(settle);
-  const size = Math.max(2, cell - 1.5);
+  const size = Math.max(1.5, cell - 1);
+
+  // A quiet paper wash behind the column field only — the receded map
+  // stays legible around it, never blanked stage-wide.
+  if (washRect) {
+    ctx.fillStyle = colors.paper;
+    ctx.globalAlpha = 0.78;
+    ctx.fillRect(washRect.x, washRect.y, washRect.w, washRect.h);
+    ctx.globalAlpha = 1;
+  }
+
+  // Column bases + labels: every decade has a shape, especially the empty
+  // ones — the void is a labeled column the reader watches stay empty.
+  ctx.strokeStyle = colors.hairline;
+  ctx.fillStyle = colors.inkSoft;
+  ctx.font = `10px ${colors.sans}`;
+  for (const col of columns) {
+    ctx.beginPath();
+    ctx.moveTo(col.x, col.baseY + 1.5);
+    ctx.lineTo(col.x + col.w, col.baseY + 1.5);
+    ctx.stroke();
+    ctx.fillText(col.label, col.x, col.baseY + 15);
+  }
+
   for (let i = 0; i < marks.length; i++) {
     const m = marks[i];
     const appear = Math.min(1, Math.max(0, (currentYear - m.year) / 1.25));
     if (appear <= 0) continue;
-    const { bx, by, hx, hy } = markPositions(i);
-    const x = bx + (hx - bx) * s;
-    const y = by + (hy - by) * s;
-    if (y < -cell || y > h + cell) continue;
-
+    const x = posX[i];
+    const y = posY[i];
     const role = assignment[i];
     const era = colors.eras[m.eraIndex];
     if (role === 'vacant') {
-      // Fill drains as the field settles; what remains is an outline —
-      // absence of ink, not an alarm color.
+      // Fill drains away in place; what remains is an outline — absence of
+      // ink, not an alarm color.
       if (s < 1) {
         ctx.globalAlpha = appear * (1 - s);
         ctx.fillStyle = era;
@@ -172,17 +237,13 @@ function draw() {
         ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
       }
     } else {
-      const tone = role === 'owner' ? colors.owner : colors.renter;
       ctx.globalAlpha = appear;
-      // era tint crossfades to tenure tone across the resettle
-      if (s < 0.5) {
-        ctx.fillStyle = era;
-        ctx.fillRect(x, y, size, size);
-      } else {
-        ctx.fillStyle = era;
-        ctx.fillRect(x, y, size, size);
+      ctx.fillStyle = era;
+      ctx.fillRect(x, y, size, size);
+      if (s > 0.5) {
+        // era tint crossfades to tenure tone, in place
         ctx.globalAlpha = appear * ((s - 0.5) * 2);
-        ctx.fillStyle = tone;
+        ctx.fillStyle = role === 'owner' ? colors.owner : colors.renter;
         ctx.fillRect(x, y, size, size);
       }
     }
@@ -205,6 +266,7 @@ function tick() {
       : String(Math.floor(Math.min(currentYear, LAST_YEAR)));
   railProgress.value = Math.min(1, Math.max(0, (currentYear - FIRST_YEAR) / (LAST_YEAR - FIRST_YEAR)));
   settleUi.value = settle;
+  homeCount.value = visibleCount(currentYear);
 
   if (Math.abs(dy) > 0.02 || Math.abs(ds) > 0.002) raf = requestAnimationFrame(tick);
 }
@@ -225,7 +287,7 @@ function onScroll() {
   const p = (intoBlock + vh * 0.55) / Math.max(1, builtTrackH);
   targetYear = p <= 0 ? FIRST_YEAR : (progressToYear(p, decades) ?? FIRST_YEAR);
 
-  // Past the built track, the marks release and resettle. Scroll-armed but
+  // Past the built track, the fills change in place. Scroll-armed but
   // time-eased — Built alone owns true scrubbing.
   settleTarget = intoBlock > builtTrackH - vh * 0.25 ? 1 : 0;
   kick();
@@ -267,6 +329,7 @@ const fmt = (n) => n.toLocaleString('en-US');
   <!-- Reduced motion: static small multiples, one per decade. -->
   <section v-if="reducedMotion" class="stock stock--static" aria-labelledby="built-h">
     <h2 id="built-h" class="sr-only">What was built, decade by decade</h2>
+    <p class="label">Each mark is one home. {{ fmt(totalUnits) }} homes.</p>
     <div class="multiples">
       <figure v-for="d in decades" :key="d.label" class="multiple">
         <figcaption>
@@ -301,7 +364,7 @@ const fmt = (n) => n.toLocaleString('en-US');
     </div>
   </section>
 
-  <!-- Full experience: one sticky canvas spans Built (scrubbed) and Home. -->
+  <!-- Full experience: one sticky stage spans Built (scrubbed) and Home. -->
   <section v-else ref="blockEl" class="stock" aria-labelledby="built-h">
     <h2 id="built-h" class="sr-only">What was built, decade by decade</h2>
 
@@ -315,12 +378,26 @@ const fmt = (n) => n.toLocaleString('en-US');
 
     <div class="stock-sticky" aria-hidden="true">
       <canvas ref="canvasEl" class="stock-canvas"></canvas>
-      <!-- Built's clock recedes as the marks resettle into the home field. -->
-      <div class="stock-counter" :style="{ opacity: Math.max(0, 1 - settleUi * 1.6) }">
-        {{ counterText }}
+
+      <!-- Permanent caption: what a mark means, and how many stand so far.
+           A second line arrives as the fills drain. -->
+      <div class="stock-caption">
+        <p class="label">Each mark is one home. <span class="stock-caption-count">{{ fmt(homeCount) }} homes</span></p>
+        <p v-show="settleUi > 0.04" class="label stock-caption-home">
+          Outlined: no household lives here.
+          <span class="key"><i class="key-swatch key-swatch--owner"></i>owner</span>
+          <span class="key"><i class="key-swatch key-swatch--renter"></i>renter</span>
+        </p>
       </div>
+
+      <!-- The rail: a fixed hairline with a playhead; the year counter is
+           anchored to the playhead. Scrolling drags the playhead. -->
       <div class="stock-rail" :style="{ opacity: Math.max(0, 1 - settleUi * 1.6) }">
-        <div class="stock-rail-fill" :style="{ height: railProgress * 100 + '%' }"></div>
+        <div class="stock-rail-line"></div>
+        <div class="stock-playhead" :style="{ top: `calc(${railProgress.valueOf() * 100}% - 0px)` }">
+          <span class="stock-playhead-year">{{ counterText }}</span>
+          <span class="stock-playhead-tick"></span>
+        </div>
       </div>
     </div>
 
@@ -351,20 +428,18 @@ const fmt = (n) => n.toLocaleString('en-US');
 <style scoped>
 .stock {
   position: relative;
-  background: var(--paper);
 }
 
 /* The stage pins for the whole block; the negative margin lets the tracks
-   below start at the block's top and slide across the pinned stage. */
+   below start at the block's top and slide across the pinned stage. The
+   stage itself is transparent — the receded map shows around the field's
+   paper wash (drawn inside the canvas). */
 .stock-sticky {
   position: sticky;
   top: 0;
   height: 100dvh;
   margin-bottom: -100dvh;
   overflow: hidden;
-  /* the stage carries its own paper so the map never reads through the
-     field's hollow marks, whatever the scroll geometry */
-  background: var(--paper);
 }
 
 .stock-canvas {
@@ -374,29 +449,84 @@ const fmt = (n) => n.toLocaleString('en-US');
   height: 100%;
 }
 
-/* The counter is the proof time passes: large but quiet. */
-.stock-counter {
+.stock-caption {
   position: absolute;
-  top: var(--space-3);
-  left: var(--space-3);
-  font-family: var(--serif);
-  font-size: var(--text-counter);
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
+  left: var(--space-2);
+  top: var(--space-2);
+  right: 64px;
 }
 
+.stock-caption p {
+  margin: 0 0 0.3rem;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  width: fit-content;
+  padding: 0.1rem 0.3rem;
+  margin-left: -0.3rem;
+}
+
+.stock-caption-count {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.7rem;
+}
+
+.key-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+}
+
+.key-swatch--owner { background: var(--owner); }
+.key-swatch--renter { background: var(--renter); }
+
+/* The rail: hairline + playhead + anchored year. */
 .stock-rail {
   position: absolute;
-  top: 12dvh;
-  bottom: 12dvh;
-  right: var(--space-2);
+  top: 8dvh;
+  bottom: 14dvh;
+  right: 18px;
   width: 1px;
+}
+
+.stock-rail-line {
+  position: absolute;
+  inset: 0;
   background: var(--hairline);
 }
 
-.stock-rail-fill {
-  width: 100%;
-  background: var(--ink-soft);
+.stock-playhead {
+  position: absolute;
+  right: -5px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transform: translateY(-50%);
+}
+
+.stock-playhead-tick {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--ink);
+  flex: none;
+}
+
+.stock-playhead-year {
+  font-family: var(--serif);
+  font-size: 2.1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  padding: 0 0.3rem;
 }
 
 .built-track {
@@ -434,6 +564,7 @@ const fmt = (n) => n.toLocaleString('en-US');
 /* Reduced-motion print form */
 .stock--static {
   padding: var(--space-4) var(--space-3);
+  background: var(--paper);
 }
 
 .multiples {

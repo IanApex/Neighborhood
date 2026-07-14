@@ -33,8 +33,8 @@
       "paragraphs": [
         { "text": "Within a fifteen-minute walk of your address, the map holds 216 features. The civic core is close: a post office, a city hall, a fire station.", "pins": ["De Pere Post Office", "De Pere City Hall", "De Pere Fire Dept, Station 1"] },
         { "text": "There are libraries here — the record shows a branch of the county system — and a cluster of stages: the Walter and Webb theatres, a comedy house.", "pins": ["De Pere Branch Brown County Library", "Walter Theatre", "Webb Theatre", "ComedyCity De Pere"] },
-        { "text": "Coffee is walkable in several directions: Luna Coffee Roasters, a café on Broadway.", "pins": ["Luna Coffee Roasters", "Café on Broadway", "Great Harvest Bread Co."] },
-        { "text": "And the parks keep coming — sixteen mapped within the radius, from Voyageur Park by the river to Legion and Optimist. The last one you pass is a block from home.", "pins": ["Voyageur Park", "Legion Park", "Optimist Park", "Wilcox Park", "Bicentennial Park"] }
+        { "text": "Coffee is walkable in several directions: Luna Coffee Roasters, a café on Broadway, a bakery from Great Harvest.", "pins": ["Luna Coffee Roasters", "Café on Broadway", "Great Harvest Bread Co."] },
+        { "text": "And the parks keep coming — sixteen mapped within the radius, from Voyageur Park by the river to Legion and Optimist. The last one you pass is a block from home.", "pins": ["Voyageur Park", "Legion Park", "Optimist Park"] }
       ]
     }
   ]

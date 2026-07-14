@@ -32,8 +32,8 @@
       "text": "Within a fifteen-minute walk of your address the map is dense with record: over a thousand features. A university law library anchors one corner of it; a post office carries the neighborhood's name. Food is at every scale, from supermarkets — a Mariano's, a Whole Foods — to a tavern the record lists twice over on the riverwalk. A twenty-one-screen cinema sits within the radius. The walk ends where it began, between the river and the lake.",
       "paragraphs": [
         { "text": "Within a fifteen-minute walk of your address the map is dense with record: over a thousand features. A university law library anchors one corner of it; a post office carries the neighborhood's name.", "pins": ["Northwestern University Law Library", "Streeterville Post Office"] },
-        { "text": "Food is at every scale, from supermarkets — a Mariano's, a Whole Foods — to a tavern the record lists twice over on the riverwalk.", "pins": ["Mariano's Fresh Market", "Whole Foods Market", "Billy Goat Tavern", "Harry Caray's Tavern"] },
-        { "text": "A twenty-one-screen cinema sits within the radius. The walk ends where it began, between the river and the lake.", "pins": ["AMC River East 21", "Columbia Yacht Club"] }
+        { "text": "Food is at every scale, from supermarkets — a Mariano's, a Whole Foods — to the taverns of record along the river: the Billy Goat, Harry Caray's.", "pins": ["Mariano's Fresh Market", "Whole Foods Market", "Billy Goat Tavern", "Harry Caray's Tavern"] },
+        { "text": "A twenty-one-screen cinema sits within the radius; a yacht club called Columbia holds the shoreline. The walk ends where it began, between the river and the lake.", "pins": ["AMC River East 21", "Columbia Yacht Club"] }
       ]
     }
   ]
