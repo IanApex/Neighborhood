@@ -75,6 +75,7 @@ const canvasEl = ref(null);
 const counterText = ref(decades[0]?.display ?? '');
 const railProgress = ref(0);
 const settleUi = ref(0); // mirrors `settle` for template bindings
+const exitUi = ref(0); // field's exit fade — the map must return first
 const homeCount = ref(0); // marks standing so far — "N homes"
 
 let ctx = null;
@@ -86,6 +87,8 @@ let currentYear = 1899;
 let targetYear = 1899;
 let settle = 0; // 0 = era tints, 1 = tenure fills (drain complete)
 let settleTarget = 0;
+let exit = 0; // 1 = field fully dissolved, map revealed
+let exitTarget = 0;
 let colors = null;
 let builtTrackH = 1;
 let cell = 4;
@@ -255,8 +258,10 @@ function tick() {
   raf = 0;
   const dy = targetYear - currentYear;
   const ds = settleTarget - settle;
+  const de = exitTarget - exit;
   currentYear += dy * 0.13; // inertia: time-lapse, never strobe
   settle += ds * 0.07;
+  exit += de * 0.08;
   draw();
 
   const d = decades.find((u) => currentYear <= u.end + 0.001) ?? decades[decades.length - 1];
@@ -266,9 +271,11 @@ function tick() {
       : String(Math.floor(Math.min(currentYear, LAST_YEAR)));
   railProgress.value = Math.min(1, Math.max(0, (currentYear - FIRST_YEAR) / (LAST_YEAR - FIRST_YEAR)));
   settleUi.value = settle;
+  exitUi.value = exit;
   homeCount.value = visibleCount(currentYear);
 
-  if (Math.abs(dy) > 0.02 || Math.abs(ds) > 0.002) raf = requestAnimationFrame(tick);
+  if (Math.abs(dy) > 0.02 || Math.abs(ds) > 0.002 || Math.abs(de) > 0.002)
+    raf = requestAnimationFrame(tick);
 }
 
 const kick = () => {
@@ -290,6 +297,12 @@ function onScroll() {
   // Past the built track, the fills change in place. Scroll-armed but
   // time-eased — Built alone owns true scrubbing.
   settleTarget = intoBlock > builtTrackH - vh * 0.25 ? 1 : 0;
+
+  // Only in the block's final stretch — after the vacancy beat has had the
+  // stage to itself — does the field dissolve and hand back to the map,
+  // which must be fully visible again BEFORE any Walking prose arrives.
+  const blockH = blockEl.value.offsetHeight;
+  exitTarget = intoBlock > blockH - vh * 1.35 ? 1 : 0;
   kick();
 }
 
@@ -376,7 +389,7 @@ const fmt = (n) => n.toLocaleString('en-US');
       <p v-for="(para, i) in homeParagraphs" :key="'srh' + i">{{ para }}</p>
     </div>
 
-    <div class="stock-sticky" aria-hidden="true">
+    <div class="stock-sticky" aria-hidden="true" :style="{ opacity: 1 - exitUi }">
       <canvas ref="canvasEl" class="stock-canvas"></canvas>
 
       <!-- Permanent caption: what a mark means, and how many stand so far.
@@ -547,12 +560,18 @@ const fmt = (n) => n.toLocaleString('en-US');
   max-width: 24rem;
 }
 
+/* The vacancy prose lands near the TOP of the home stretch, while the
+   drained field is fully on stage — the reader gets the whole beat (marks,
+   outlines, key, language) before anything dissolves. */
 .home-track {
   position: relative;
-  min-height: 175vh;
+  /* room for three beats: the drain plays on an unobstructed field (~one
+     viewport), the vacancy prose scrolls up over it, THEN the exit fade
+     takes the final stretch */
+  min-height: 260vh;
   display: flex;
-  align-items: flex-end;
-  padding: 0 var(--space-3) var(--space-5);
+  align-items: flex-start;
+  padding: 85vh var(--space-3) var(--space-5);
 }
 
 .home-prose p {

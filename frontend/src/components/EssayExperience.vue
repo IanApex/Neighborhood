@@ -168,8 +168,9 @@ function setupSectionObservers() {
   if (walkingEl.value) sectionIO.observe(walkingEl.value);
   if (closingSentinel.value) sectionIO.observe(closingSentinel.value);
 
-  // The map's return takes ~4.4s, so it's armed a full viewport before the
-  // Walking section arrives — the reader should never see it mid-turn.
+  // The map's return is armed as the field's exit fade begins — the radius
+  // finishes drawing as the field clears, and both are done before any
+  // Walking prose arrives.
   const prepIO = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -179,7 +180,7 @@ function setupSectionObservers() {
         }
       }
     },
-    { rootMargin: '0px 0px 100% 0px' },
+    { rootMargin: '0px 0px 60% 0px' },
   );
   if (walkPrepSentinel.value) prepIO.observe(walkPrepSentinel.value);
 

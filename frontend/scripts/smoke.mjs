@@ -97,7 +97,6 @@ for (const geoid of GEOIDS) {
   await page.evaluate((y) => window.scrollTo(0, y), geom.walkingTop + 200);
   await new Promise((r) => setTimeout(r, 2600));
   await shot('5-walking');
-  const pinCount = await page.evaluate(() => document.querySelectorAll('.map-pin').length);
 
   // While the final walking paragraph is on screen the essay must still be
   // readable — closing may only engage a full quiet screen later.
@@ -109,6 +108,11 @@ for (const geoid of GEOIDS) {
   const prematureClose = await page.evaluate(() => !!document.querySelector('.experience--closing'));
   if (prematureClose) errors.push('closing engaged while the last walking paragraph was on screen');
   await shot('5b-walking-end');
+  // Pins flush only after beginWalking's promise resolves (~4.4s); by the
+  // end of the walking section they must be on the map.
+  await new Promise((r) => setTimeout(r, 3000));
+  const pinCount = await page.evaluate(() => document.querySelectorAll('.map-pin').length);
+  if (!pinCount) errors.push('no pins landed by the end of the walking movement');
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await new Promise((r) => setTimeout(r, 2600));
