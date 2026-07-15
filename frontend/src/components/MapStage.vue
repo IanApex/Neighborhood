@@ -129,7 +129,7 @@ function transformStyle(next) {
   // Self-hosted Literata Italic glyphs: the only text the map ever sets is
   // the dossier's named water, in the essay's own serif. Every source
   // symbol layer is hidden, so no other glyph stack is ever requested.
-  return { ...next, layers, glyphs: `${location.origin}/glyphs/{fontstack}/{range}.pbf` };
+  return { ...next, layers, glyphs: `${location.origin}${import.meta.env.BASE_URL}glyphs/{fontstack}/{range}.pbf` };
 }
 
 // The map says the river's name — and nothing else. Labels exist only for
