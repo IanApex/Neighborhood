@@ -27,8 +27,12 @@ jobs:
       - run: npm ci
         working-directory: frontend
       # Project Pages serve from /<repo-name>/, so the base path must match.
+      # VITE_WORKER_URL is baked in at build time (Vite); without it the
+      # address input renders readonly and the site is fixtures-only.
       - run: npx vite build --base "/${{ github.event.repository.name }}/"
         working-directory: frontend
+        env:
+          VITE_WORKER_URL: https://neighborhood-essay.ianapex.workers.dev
       - uses: actions/configure-pages@v5
         with:
           enablement: true
