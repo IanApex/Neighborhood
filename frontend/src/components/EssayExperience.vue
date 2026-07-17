@@ -229,6 +229,24 @@ function setupSectionObservers() {
   for (const el of walkingEl.value?.querySelectorAll('[data-para]') ?? []) pinIO.observe(el);
 }
 
+// Desktop: once the frontispiece scrolls away, the title copy re-pins in
+// the same top-left position and stays for the whole read.
+const frontispieceEl = ref(null);
+const copyShifted = ref(false);
+let copyIO = null;
+
+function setupCopyObserver() {
+  copyIO = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        copyShifted.value = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+      }
+    },
+    { threshold: 0 },
+  );
+  if (frontispieceEl.value) copyIO.observe(frontispieceEl.value);
+}
+
 const recordEl = ref(null);
 function scrollToRecord() {
   recordEl.value?.$el?.scrollIntoView({
@@ -254,6 +272,7 @@ onMounted(() => {
   runRitual(); // the essay always composes, whatever else fails
   try {
     setupSectionObservers();
+    setupCopyObserver();
   } catch (err) {
     console.error('section observers failed', err);
   }
@@ -262,18 +281,25 @@ onMounted(() => {
 onUnmounted(() => {
   sectionIO?.disconnect();
   pinIO?.disconnect();
+  copyIO?.disconnect();
 });
 </script>
 
 <template>
   <div ref="root" class="experience" :class="{ 'experience--closing': closing }">
-    <MapStage ref="mapStage" :dossier="dossier" :receded="receded" :reduced-motion="reducedMotion" />
+    <MapStage
+      ref="mapStage"
+      :dossier="dossier"
+      :receded="receded"
+      :closing="closing"
+      :reduced-motion="reducedMotion"
+    />
 
     <article class="essay">
       <h1 class="sr-only">{{ essay.title }}</h1>
 
       <!-- Dedication + resolution ritual: a title page composing itself. -->
-      <header class="frontispiece">
+      <header ref="frontispieceEl" class="frontispiece">
         <p ref="dedicationEl" class="dedication" :class="{ 'dedication--in': flipDone }" aria-live="polite">
           {{ addressText }}
         </p>
@@ -322,6 +348,13 @@ onUnmounted(() => {
         <div ref="closingSentinel" class="closing-sentinel"></div>
       </div>
     </article>
+
+    <!-- Desktop: the title copy, re-pinned top-left while the reader
+         scrolls. A presentational copy of the frontispiece. -->
+    <div class="pinned-copy" :class="{ 'pinned-copy--in': copyShifted && !closing }" aria-hidden="true">
+      <p class="pinned-dedication">{{ addressText }}</p>
+      <p class="pinned-tract label">{{ tractLine }}</p>
+    </div>
 
     <!-- Back matter: below the closing sentinel, on its own paper. -->
     <TheRecord ref="recordEl" :dossier="dossier" />
@@ -514,6 +547,60 @@ onUnmounted(() => {
 .record-affordance:hover,
 .record-affordance:focus-visible {
   color: var(--ink);
+}
+
+/* ——— desktop: two-column read ———
+   The map keeps the left third; the essay's content column takes the right
+   two-thirds; the title copy re-pins centered over the map column. */
+.pinned-copy {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .pinned-copy {
+    display: block;
+    position: fixed;
+    z-index: 2;
+    pointer-events: none;
+    top: var(--space-4);
+    left: var(--space-3);
+    max-width: 28ch;
+    opacity: 0;
+    transition: opacity 900ms var(--ease-settle);
+  }
+
+  .pinned-copy--in {
+    opacity: 1;
+  }
+
+  .pinned-dedication {
+    font-size: var(--text-dedication);
+    margin: 0 0 var(--space-1);
+  }
+
+  .pinned-tract {
+    margin: 0;
+  }
+
+  .pinned-copy p {
+    background: color-mix(in srgb, var(--paper) 85%, transparent);
+    width: fit-content;
+    padding: 0.1rem 0.35rem;
+    margin-left: -0.35rem;
+  }
+
+  /* The essay's text is one column scrolling up the right side of the
+     page, the same side the record reads on. The 12rem offset keeps the
+     built movement's prose clear of the year rail. */
+  .movement--arrival,
+  .movement--walking {
+    padding-right: 12rem;
+  }
+
+  .movement--arrival .prose-card,
+  .movement--walking .prose-card {
+    margin-left: auto;
+  }
 }
 
 /* dev-only escape hatch back to the fixture list */

@@ -166,6 +166,16 @@ onMounted(() => {
   border-top: 1px solid var(--hairline);
 }
 
+/* Desktop: the record is a right-third column; the closing portrait (map +
+   dedication) keeps the left two-thirds beside it. */
+@media (min-width: 1024px) {
+  .record {
+    margin-left: 66.667vw;
+    min-height: 100dvh;
+    border-left: 1px solid var(--hairline);
+  }
+}
+
 .record-title {
   font-family: var(--serif);
   font-weight: 500;

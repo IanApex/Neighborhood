@@ -20,6 +20,7 @@ import { drawColumnsFigure } from '../lib/columnsFigure.js';
 const props = defineProps({
   dossier: { type: Object, required: true },
   receded: { type: Boolean, default: false },
+  closing: { type: Boolean, default: false },
   reducedMotion: { type: Boolean, default: false },
 });
 
@@ -334,6 +335,18 @@ async function beginArrival() {
   await wait(600);
 }
 
+// Desktop: when content takes the right of the page, pan so the point at
+// the viewport's center sits at the center of the map's remaining column
+// (the left `fraction` of the viewport) — and back when it un-shifts.
+function panForColumn(fraction, entering, durationMs = 1500) {
+  if (!map || !window.matchMedia('(min-width: 1024px)').matches) return;
+  const dx = window.innerWidth * (0.5 - fraction / 2);
+  map.panBy([entering ? dx : -dx, 0], {
+    duration: props.reducedMotion ? 0 : durationMs,
+    essential: true,
+  });
+}
+
 // The recede is layered, not a blanket fade: water and roads drop to half,
 // the undated building fabric surfaces, and the you-dot never dims (it
 // lives outside the fading canvas).
@@ -342,6 +355,19 @@ watch(
   (r) => {
     if (!arrivalDone || failed.value) return;
     applyState(r ? 'receded' : 'walking', 1500);
+    // Entering the built field, the map keeps the left third — recenter in
+    // it. Leaving it, beginWalking's own fitBounds recenters the camera.
+    if (r) panForColumn(1 / 3, true);
+  },
+);
+
+// The record: the map keeps the left two-thirds beside the right-third
+// ledger — recenter in that column, and back out if the reader returns.
+watch(
+  () => props.closing,
+  (c) => {
+    if (!arrivalDone || failed.value) return;
+    panForColumn(2 / 3, c, 1600);
   },
 );
 
@@ -614,6 +640,14 @@ onUnmounted(() => {
    script. The built fabric surfaces underneath the stock field. */
 .map-canvas--receded {
   opacity: 0.45;
+}
+
+/* Desktop: the stock field only stages the right two-thirds, so the map's
+   left third stays a legible presence rather than fully receding. */
+@media (min-width: 1024px) {
+  .map-canvas--receded {
+    opacity: 0.75;
+  }
 }
 
 .you-dot {

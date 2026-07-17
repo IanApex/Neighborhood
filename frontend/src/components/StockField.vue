@@ -633,4 +633,30 @@ const fmt = (n) => n.toLocaleString('en-US');
     padding-left: var(--space-5);
   }
 }
+
+/* Desktop: the field stages on the right two-thirds; the map stays a real
+   presence on the left third (see MapStage's desktop recede). The canvas
+   relayouts itself via its ResizeObserver. Prose right-aligns into the
+   page's single scrolling text column — the 12rem offset keeps it clear
+   of the year rail's playhead. */
+@media (min-width: 1024px) {
+  .stock-sticky {
+    margin-left: 33.334vw;
+  }
+
+  .built-paragraph {
+    left: 33.334vw;
+    right: 12rem;
+  }
+
+  .built-paragraph p {
+    margin-left: auto;
+  }
+
+  .home-track {
+    padding-left: calc(33.334vw + var(--space-5));
+    padding-right: 12rem;
+    justify-content: flex-end;
+  }
+}
 </style>
