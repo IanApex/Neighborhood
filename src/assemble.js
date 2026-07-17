@@ -23,6 +23,18 @@ import { tractFromAddress, tractFromCoordinates } from './geocode.js';
 import { fetchCoreStats, fetchYearBuiltDistribution } from './acs.js';
 import { fetchAmenities } from './overpass.js';
 import { fetchGeography } from './geography.js';
+import { fetchHolc, fetchHistoricPlaces } from './history.js';
+
+// Historical layers read the local partition sets built by
+// scripts/build-holc.mjs and scripts/build-nrhp.mjs (the worker reads the
+// same partitions from KV). Missing partition dirs → layers null/empty.
+const localPartition = async (prefix, cell) => {
+  try {
+    return JSON.parse(await readFile(`data/${prefix}/${cell}.json`, 'utf8'));
+  } catch {
+    return null;
+  }
+};
 
 async function main() {
   const args = process.argv.slice(2);
@@ -66,6 +78,12 @@ async function main() {
   ])).map(settle);
   let [amenities] = (await Promise.allSettled([fetchAmenities(anchor)])).map(settle);
   let [geography] = (await Promise.allSettled([fetchGeography(tract)])).map(settle);
+  const [holc, historicPlaces] = (
+    await Promise.allSettled([
+      fetchHolc(localPartition, anchor, tract.centroid),
+      fetchHistoricPlaces(localPartition, anchor),
+    ])
+  ).map(settle);
 
   // A rerun where one flaky layer fails must not clobber a good value already
   // on disk (Overpass 504s make this common). Keep the previous layer instead.
@@ -81,13 +99,21 @@ async function main() {
   } catch { /* no previous dossier — nothing to preserve */ }
 
   const dossier = {
-    schemaVersion: '0.2.0',
+    schemaVersion: '0.3.0',
     generatedAt: new Date().toISOString(),
     sources: {
       geocoding: 'US Census Bureau Geocoder (Public_AR_Current)',
       demographics: `US Census Bureau ACS 5-year (${process.env.ACS_YEAR || '2024'})`,
       amenities: 'OpenStreetMap contributors, via Overpass API',
       geography: 'OpenStreetMap contributors, via Overpass API',
+      // Attribution REQUIRED wherever the HOLC layer appears (CC BY-NC 4.0,
+      // noncommercial forever); included only when the layer is present.
+      ...(holc && {
+        holc: 'Mapping Inequality, Digital Scholarship Lab, University of Richmond (CC BY-NC 4.0)',
+      }),
+      ...(historicPlaces?.length && {
+        historicPlaces: 'National Register of Historic Places, National Park Service',
+      }),
     },
     input: geo.matchedAddress ? { matchedAddress: geo.matchedAddress } : { coordinates: geo.location },
     tractCore: {
@@ -99,18 +125,19 @@ async function main() {
         areaWaterSqM: tract.areaWater,
       },
       layers: {
-        core,        // population, median year built, tenure
+        core,        // population, median year built, tenure, median age, commute
         yearBuilt,   // decade-bucket distribution
         geography,   // named waterways/water/landforms near the tract
+        holc,        // HOLC grade at the anchor (Mapping Inequality); null = no coverage
         // Coming in later spikes:
         canopy: null,       // NLCD tree canopy % (raster work)
         historicalMaps: null, // Sanborn / USGS topo availability + refs
-        holc: null,           // Mapping Inequality redlining polygons, where they exist
       },
     },
     addressContext: {
       anchor,
       amenities,   // walking-distance POI counts + named examples
+      historicPlaces: historicPlaces ?? [], // National Register entries in the walkshed
     },
   };
 
@@ -135,6 +162,8 @@ async function main() {
       .map((g) => g.name);
     console.log(`  Named geography: ${names.length ? names.join(', ') : '(none)'}`);
   }
+  console.log(`  HOLC: ${holc ? `${holc.grade} (${holc.category}), ${holc.city}` : '(no coverage)'}`);
+  console.log(`  Historic places in walkshed: ${historicPlaces?.length ?? 0}`);
 }
 
 main().catch((err) => {

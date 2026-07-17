@@ -1,11 +1,12 @@
 {
-  "schemaVersion": "0.2.0",
-  "generatedAt": "2026-07-13T23:54:17.895Z",
+  "schemaVersion": "0.3.0",
+  "generatedAt": "2026-07-17T22:46:04.271Z",
   "sources": {
     "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
     "amenities": "OpenStreetMap contributors, via Overpass API",
-    "geography": "OpenStreetMap contributors, via Overpass API"
+    "geography": "OpenStreetMap contributors, via Overpass API",
+    "historicPlaces": "National Register of Historic Places, National Park Service"
   },
   "input": {
     "matchedAddress": "335 S BROADWAY, DE PERE, WI, 54115"
@@ -26,10 +27,20 @@
         "tractName": "Census Tract 103; Brown County; Wisconsin",
         "medianYearBuilt": 1988,
         "population": 7319,
+        "medianAge": 42.4,
         "tenure": {
           "totalOccupied": 3429,
           "ownerOccupied": 2201,
           "renterOccupied": 1228
+        },
+        "commute": {
+          "droveAlone": 3122,
+          "carpooled": 484,
+          "publicTransit": 0,
+          "bicycle": 0,
+          "walked": 30,
+          "workedFromHome": 555,
+          "total": 4264
         }
       },
       "yearBuilt": {
@@ -120,9 +131,9 @@
           }
         ]
       },
+      "holc": null,
       "canopy": null,
-      "historicalMaps": null,
-      "holc": null
+      "historicalMaps": null
     }
   },
   "addressContext": {
@@ -581,6 +592,72 @@
           "lon": -88.0754412
         }
       ]
-    }
+    },
+    "historicPlaces": [
+      {
+        "name": "Heyrman, Henry and Mary, House",
+        "listedYear": 2015,
+        "category": "building",
+        "lat": 44.44533,
+        "lon": -88.05754,
+        "distanceM": 251
+      },
+      {
+        "name": "Gutknecht, Edwin and Jennie, House",
+        "listedYear": 2015,
+        "category": "building",
+        "lat": 44.44443,
+        "lon": -88.0579,
+        "distanceM": 282
+      },
+      {
+        "name": "Krause, Julius, Store Building",
+        "listedYear": 2023,
+        "category": "building",
+        "lat": 44.44872,
+        "lon": -88.06087,
+        "distanceM": 284
+      },
+      {
+        "name": "Baeten, John, Store",
+        "listedYear": 2014,
+        "category": "building",
+        "lat": 44.44867,
+        "lon": -88.05709,
+        "distanceM": 385
+      },
+      {
+        "name": "De Pere Lock and Dam Historic District",
+        "listedYear": 1993,
+        "category": "district",
+        "lat": 44.44938,
+        "lon": -88.06321,
+        "distanceM": 417
+      },
+      {
+        "name": "South Broadway Historic District",
+        "listedYear": 2010,
+        "category": "district",
+        "lat": 44.4503,
+        "lon": -88.06033,
+        "distanceM": 458
+      },
+      {
+        "name": "Nicolet High School",
+        "listedYear": 2015,
+        "category": "building",
+        "lat": 44.44668,
+        "lon": -88.06774,
+        "distanceM": 581
+      },
+      {
+        "name": "Steckart and Falck Double Block",
+        "listedYear": 2011,
+        "category": "building",
+        "lat": 44.45157,
+        "lon": -88.0601,
+        "distanceM": 600
+      }
+    ]
   }
 }

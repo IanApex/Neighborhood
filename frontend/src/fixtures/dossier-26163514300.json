@@ -1,11 +1,12 @@
 {
-  "schemaVersion": "0.2.0",
-  "generatedAt": "2026-07-13T23:54:15.539Z",
+  "schemaVersion": "0.3.0",
+  "generatedAt": "2026-07-17T22:46:48.225Z",
   "sources": {
     "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
     "amenities": "OpenStreetMap contributors, via Overpass API",
-    "geography": "OpenStreetMap contributors, via Overpass API"
+    "geography": "OpenStreetMap contributors, via Overpass API",
+    "holc": "Mapping Inequality, Digital Scholarship Lab, University of Richmond (CC BY-NC 4.0)"
   },
   "input": {
     "coordinates": {
@@ -29,10 +30,20 @@
         "tractName": "Census Tract 5143; Wayne County; Michigan",
         "medianYearBuilt": 1938,
         "population": 2319,
+        "medianAge": 32.6,
         "tenure": {
           "totalOccupied": 763,
           "ownerOccupied": 421,
           "renterOccupied": 342
+        },
+        "commute": {
+          "droveAlone": 367,
+          "carpooled": 40,
+          "publicTransit": 45,
+          "bicycle": 0,
+          "walked": 0,
+          "workedFromHome": 31,
+          "total": 517
         }
       },
       "yearBuilt": {
@@ -96,9 +107,89 @@
         "namedWater": [],
         "namedLandforms": []
       },
+      "holc": {
+        "grade": "C",
+        "category": "Definitely Declining",
+        "city": "Detroit",
+        "year": null,
+        "definition": "In the late 1930s the federal Home Owners' Loan Corporation graded urban neighborhoods for mortgage 'security'; grades shaped decades of lending.",
+        "polygon": [
+          [
+            [
+              [
+                -82.99354,
+                42.36143
+              ],
+              [
+                -82.98416,
+                42.36468
+              ],
+              [
+                -82.99135,
+                42.37368
+              ],
+              [
+                -82.97964,
+                42.37878
+              ],
+              [
+                -82.98517,
+                42.38685
+              ],
+              [
+                -82.98736,
+                42.38593
+              ],
+              [
+                -82.98944,
+                42.389
+              ],
+              [
+                -82.98885,
+                42.38962
+              ],
+              [
+                -82.99212,
+                42.39374
+              ],
+              [
+                -82.99408,
+                42.39317
+              ],
+              [
+                -82.9956,
+                42.39582
+              ],
+              [
+                -83.00551,
+                42.39356
+              ],
+              [
+                -83.01137,
+                42.38454
+              ],
+              [
+                -83.00394,
+                42.37276
+              ],
+              [
+                -83.00115,
+                42.36912
+              ],
+              [
+                -83.0002,
+                42.36973
+              ],
+              [
+                -82.99354,
+                42.36143
+              ]
+            ]
+          ]
+        ]
+      },
       "canopy": null,
-      "historicalMaps": null,
-      "holc": null
+      "historicalMaps": null
     }
   },
   "addressContext": {
@@ -521,6 +612,7 @@
           "lon": -82.9926094
         }
       ]
-    }
+    },
+    "historicPlaces": []
   }
 }

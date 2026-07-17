@@ -6,9 +6,11 @@
 //   B25035_001E  Median year structure built
 //   B25034_*     Year structure built, by period (buckets fetched via group())
 //   B01003_001E  Total population
-// To VERIFY on first run (I believe these are correct but confirm against
-// the variables list for your chosen vintage):
 //   B25003_001E/002E/003E  Tenure: total occupied / owner / renter
+//   B01002_001E  Median age (verified against 2024 vintage, 2026-07-17)
+//   B08301: means of transportation to work (verified 2024 vintage, 2026-07-17)
+//     _001E total · _003E drove alone · _004E carpooled · _010E public
+//     transportation · _018E bicycle · _019E walked · _021E worked from home
 
 const ACS_YEAR = process.env.ACS_YEAR || '2024'; // newest 5-year vintage (verified live 2026-07)
 const BASE = `https://api.census.gov/data/${ACS_YEAR}/acs/acs5`;
@@ -27,7 +29,9 @@ function zipRow(json) {
 
 export async function fetchCoreStats({ state, county, tract }) {
   const key = requireKey();
-  const vars = 'NAME,B25035_001E,B01003_001E,B25003_001E,B25003_002E,B25003_003E';
+  const vars =
+    'NAME,B25035_001E,B01003_001E,B25003_001E,B25003_002E,B25003_003E,B01002_001E,' +
+    'B08301_001E,B08301_003E,B08301_004E,B08301_010E,B08301_018E,B08301_019E,B08301_021E';
   const url = `${BASE}?get=${vars}&for=tract:${tract}&in=state:${state}%20county:${county}&key=${key}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`ACS HTTP ${res.status}: ${await res.text()}`);
@@ -39,15 +43,32 @@ export async function fetchCoreStats({ state, county, tract }) {
     return Number.isFinite(n) && n > -1000 ? n : null;
   };
 
+  // Texture, not dashboard: commute means and median age only — income and
+  // home-value variables are deliberately excluded (they tip the essay into
+  // appraisal).
+  const commuteTotal = num(data.B08301_001E);
   return {
     tractName: data.NAME,
     medianYearBuilt: num(data.B25035_001E),
     population: num(data.B01003_001E),
+    medianAge: num(data.B01002_001E),
     tenure: {
       totalOccupied: num(data.B25003_001E),
       ownerOccupied: num(data.B25003_002E),
       renterOccupied: num(data.B25003_003E),
     },
+    commute:
+      commuteTotal != null
+        ? {
+            droveAlone: num(data.B08301_003E),
+            carpooled: num(data.B08301_004E),
+            publicTransit: num(data.B08301_010E),
+            bicycle: num(data.B08301_018E),
+            walked: num(data.B08301_019E),
+            workedFromHome: num(data.B08301_021E),
+            total: commuteTotal,
+          }
+        : null,
   };
 }
 

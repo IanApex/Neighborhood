@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { fixtureFor } from '../fixtures/index.js';
 import { decadesFrom } from '../lib/stock.js';
 import { orderPinsGreedy } from '../lib/walk.js';
@@ -16,8 +16,12 @@ const props = defineProps({
   // resolution ritual already performed while the pipeline ran.
   data: { type: Object, default: null },
   ritualDone: { type: Boolean, default: false },
+  // Diptych: 'first' offers "Now, where you live" at the closing;
+  // diptychFirst (essay two only) carries portrait one for the pair.
+  diptychStage: { type: String, default: null },
+  diptychFirst: { type: Object, default: null },
 });
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'diptych-next']);
 
 const { dossier, essay } = props.data ?? fixtureFor(props.geoid);
 const reducedMotion = useReducedMotion();
@@ -26,7 +30,19 @@ const movement = (id) => essay.movements.find((m) => m.id === id) ?? null;
 const arrival = movement('arrival');
 const built = movement('built');
 const home = movement('home');
+const history = movement('history');
 const walking = movement('walking');
+
+// Historic places the history prose actually names — same pin discipline as
+// walking: the record may hold eight, the map only marks what the essay
+// says. Names are matched verbatim (case-insensitive) against the text.
+const namedHistoricPlaces = (() => {
+  if (!history) return [];
+  const text = history.text.toLowerCase();
+  return (dossier.addressContext.historicPlaces ?? []).filter(
+    (p) => p.lat != null && text.includes(p.name.toLowerCase()),
+  );
+})();
 
 // ——— resolution ritual state ———
 const root = ref(null);
@@ -110,6 +126,7 @@ async function runRitual() {
 
 // ——— movement transitions (IntersectionObserver only) ———
 const stockEl = ref(null);
+const historyEl = ref(null);
 const walkingEl = ref(null);
 const walkPrepSentinel = ref(null);
 const closingSentinel = ref(null);
@@ -117,7 +134,17 @@ const walkingReady = ref(false); // beginWalking's promise has resolved
 let sectionIO = null;
 let pinIO = null;
 let walkingStarted = false;
+let historyStarted = false;
 let pendingPinParas = []; // paragraphs seen before the map was back
+
+// History: the grade wash and dated labels arrive with the prose, over the
+// still-receded map; they fade out when the walking transition begins.
+function startHistory() {
+  if (historyStarted) return;
+  historyStarted = true;
+  mapStage.value.beginHistory();
+  if (namedHistoricPlaces.length) mapStage.value.addHistoricPlaces(namedHistoricPlaces);
+}
 
 const walkingParagraphs = computed(() => {
   if (walking?.paragraphs?.length) return walking.paragraphs;
@@ -166,6 +193,7 @@ function dropPinsFor(idx) {
 async function startWalking() {
   if (walkingStarted) return;
   walkingStarted = true;
+  if (historyStarted) mapStage.value.endHistory(); // the grade is a page, not a tint
   receded.value = false;
   await mapStage.value.beginWalking();
   walkingReady.value = true;
@@ -186,12 +214,14 @@ function setupSectionObservers() {
         }
         if (!e.isIntersecting) continue;
         if (e.target === stockEl.value) receded.value = true;
+        if (e.target === historyEl.value) startHistory();
         if (e.target === walkingEl.value) startWalking(); // safety net
       }
     },
     { threshold: 0.05 },
   );
   if (stockEl.value) sectionIO.observe(stockEl.value);
+  if (historyEl.value) sectionIO.observe(historyEl.value);
   if (walkingEl.value) sectionIO.observe(walkingEl.value);
   if (closingSentinel.value) sectionIO.observe(closingSentinel.value);
 
@@ -254,17 +284,53 @@ function scrollToRecord() {
   });
 }
 
-function savePortrait() {
+// Attribution: Mapping Inequality joins ONLY when the HOLC layer was shown
+// (the essay carries a history movement and the layer exists) — CC BY-NC 4.0
+// requires it there, and honesty forbids it anywhere else.
+const holcShown = !!(history && dossier.tractCore.layers.holc);
+const attributionText = computed(
+  () =>
+    '© OpenStreetMap contributors · U.S. Census Bureau' +
+    (holcShown ? ' · Mapping Inequality, Univ. of Richmond (CC BY-NC 4.0)' : ''),
+);
+
+function portraitOpts() {
   const yearBuilt = dossier.tractCore.layers.yearBuilt;
   const tenure = dossier.tractCore.layers.core?.tenure;
   const totalUnits = yearBuilt?.totalUnits ?? 0;
-  mapStage.value.exportPortrait({
+  return {
     dedication: props.addressText,
     tractLine: tractLine.value,
     decades: decadesFrom(yearBuilt),
     totalUnits,
     vacancy: tenure?.totalOccupied != null ? Math.max(0, totalUnits - tenure.totalOccupied) : 0,
-  });
+    holcShown,
+  };
+}
+
+function savePortrait() {
+  mapStage.value.exportPortrait(portraitOpts());
+}
+
+// ——— diptych ———
+// Stage one's closing: compose this portrait (attribution off — the pair
+// draws it once) and hand it up; App returns to the input for address two.
+async function diptychNext() {
+  const canvas = await mapStage.value.composePortrait({ ...portraitOpts(), attribution: false });
+  emit('diptych-next', { image: canvas.toDataURL('image/png'), holcShown });
+}
+
+// Stage two's closing: the pair, still — portrait one beside this page's
+// own composed portrait. No summary stats, no winner.
+const diptychSecondImage = ref(null);
+watch(closing, async (c) => {
+  if (!c || !props.diptychFirst || diptychSecondImage.value) return;
+  const canvas = await mapStage.value.composePortrait({ ...portraitOpts(), attribution: false });
+  diptychSecondImage.value = canvas.toDataURL('image/png');
+});
+
+function saveDiptych() {
+  mapStage.value.exportDiptych(props.diptychFirst, portraitOpts());
 }
 
 onMounted(() => {
@@ -327,6 +393,15 @@ onUnmounted(() => {
         />
       </div>
 
+      <!-- HISTORY — documentary, over the still-receded map: the HOLC grade
+           wash (a quotation of the archival record) and dated Register
+           labels. Emitted only when the essay carries the movement. -->
+      <section v-if="history" ref="historyEl" class="movement movement--history" aria-label="History">
+        <div class="prose-card">
+          <p v-for="(para, i) in history.text.split(/\n\n+/)" :key="i" class="reveal">{{ para }}</p>
+        </div>
+      </section>
+
       <!-- WALKING — second person; the map returns to their point. Nothing
            reveals, no pin drops, until that return has fully completed. -->
       <div ref="walkPrepSentinel" aria-hidden="true"></div>
@@ -359,14 +434,42 @@ onUnmounted(() => {
     <!-- Back matter: below the closing sentinel, on its own paper. -->
     <TheRecord ref="recordEl" :dossier="dossier" />
 
-    <!-- The shareable portrait: dedication over accumulated evidence. -->
+    <!-- The shareable portrait: dedication over accumulated evidence. In
+         diptych stage two the closing is the pair itself — both portraits,
+         one save, attribution once. -->
     <div class="closing-overlay" :class="{ 'closing-overlay--in': closing }">
-      <p class="closing-dedication">{{ addressText }}</p>
-      <p class="label">{{ tractLine }}</p>
-      <button v-if="closing" class="save-button label" type="button" @click="savePortrait">
-        Save this page
-      </button>
-      <p class="closing-attribution">© OpenStreetMap contributors · U.S. Census Bureau</p>
+      <template v-if="diptychFirst">
+        <div class="diptych" aria-label="Then and now">
+          <figure class="diptych-panel">
+            <img v-if="diptychFirst.image" :src="diptychFirst.image" :alt="diptychFirst.addressText" />
+          </figure>
+          <figure class="diptych-panel">
+            <img v-if="diptychSecondImage" :src="diptychSecondImage" :alt="addressText" />
+          </figure>
+        </div>
+        <button v-if="closing" class="save-button label" type="button" @click="saveDiptych">
+          Save the pair
+        </button>
+        <p class="closing-attribution">
+          {{ attributionText }}<template v-if="diptychFirst.holcShown && !holcShown"> · Mapping Inequality, Univ. of Richmond (CC BY-NC 4.0)</template>
+        </p>
+      </template>
+      <template v-else>
+        <p class="closing-dedication">{{ addressText }}</p>
+        <p class="label">{{ tractLine }}</p>
+        <button v-if="closing" class="save-button label" type="button" @click="savePortrait">
+          Save this page
+        </button>
+        <button
+          v-if="closing && diptychStage === 'first'"
+          class="save-button label"
+          type="button"
+          @click="diptychNext"
+        >
+          Now, where you live →
+        </button>
+        <p class="closing-attribution">{{ attributionText }}</p>
+      </template>
       <button class="record-affordance label" type="button" @click="scrollToRecord">
         The Record ↓
       </button>
@@ -459,6 +562,14 @@ onUnmounted(() => {
   opacity: 0;
 }
 
+/* History gets stage time: the wash needs a beat on the map before the
+   prose, and a beat after. */
+.movement--history {
+  min-height: 140dvh;
+  display: flex;
+  align-items: center;
+}
+
 .movement--walking {
   min-height: 220dvh;
   display: flex;
@@ -520,6 +631,40 @@ onUnmounted(() => {
   padding: var(--space-1) 0;
   border-bottom: 1px solid var(--hairline);
   color: var(--ink);
+}
+
+/* a second closing affordance sits directly under the first */
+.save-button + .save-button {
+  margin-top: var(--space-1);
+}
+
+/* ——— the diptych: two portraits, still ——— */
+.diptych {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  overflow-y: auto;
+}
+
+.diptych-panel {
+  margin: 0;
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.diptych-panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 82dvh;
+  object-fit: contain;
+  object-position: top left;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
 }
 
 /* ODbL requires this on the shared state; quiet, not invisible. */
@@ -593,11 +738,13 @@ onUnmounted(() => {
      page, the same side the record reads on. The 12rem offset keeps the
      built movement's prose clear of the year rail. */
   .movement--arrival,
+  .movement--history,
   .movement--walking {
     padding-right: 12rem;
   }
 
   .movement--arrival .prose-card,
+  .movement--history .prose-card,
   .movement--walking .prose-card {
     margin-left: auto;
   }

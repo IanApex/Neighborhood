@@ -2,12 +2,17 @@
 import { ref } from 'vue';
 import { fixtures } from '../fixtures/index.js';
 
-// Opening state: blank paper, one address input, one instruction line.
+// Opening state: blank paper, one address input, one instruction line —
+// the occasion is the address you grew up at, and any US address works.
 // With a worker configured (VITE_WORKER_URL) the input is real: submit
 // geocodes the address and hands off to the live ritual. The three
 // reference fixtures remain beneath it as instant demo entries — they
-// never hit the worker.
-const emit = defineEmits(['pick']);
+// never hit the worker. Diptych mode ("Compare two addresses.") runs the
+// same flow twice, sequentially; the parent owns the stage.
+const props = defineProps({
+  compareStage: { type: String, default: null }, // null | 'first' | 'second'
+});
+const emit = defineEmits(['pick', 'compare']);
 
 const workerUrl = (import.meta.env.VITE_WORKER_URL ?? '').replace(/\/$/, '');
 const live = !!workerUrl;
@@ -100,11 +105,29 @@ function pick(fixture, event) {
         The record couldn't be reached just now.
       </span>
       <span v-else-if="state === 'checking'" class="picker-instruction">Looking.</span>
-      <span v-else class="picker-instruction">Type an address.</span>
+      <template v-else-if="compareStage === 'second'">
+        <span class="picker-instruction">Now, where you live.</span>
+      </template>
+      <template v-else>
+        <span class="picker-instruction">Type the address you grew up at.</span>
+        <span class="picker-instruction picker-instruction--quiet">
+          Or any address in the United States.
+        </span>
+      </template>
     </div>
 
-    <!-- The three reference fixtures: instant demo entries. -->
-    <ul class="picker-fixtures" aria-label="Reference tracts (fixtures)">
+    <!-- Diptych entry: one quiet affordance, live mode only. -->
+    <button
+      v-if="live && !compareStage"
+      class="picker-compare label"
+      type="button"
+      @click="emit('compare')"
+    >
+      Compare two addresses.
+    </button>
+
+    <!-- The three reference fixtures: instant demo entries (solo mode). -->
+    <ul v-if="!compareStage" class="picker-fixtures" aria-label="Reference tracts (fixtures)">
       <li v-for="f in fixtures" :key="f.geoid">
         <button class="picker-choice" type="button" @click="pick(f, $event)">
           <span class="picker-address">{{ addressOf(f) }}</span>
@@ -150,6 +173,26 @@ function pick(fixture, event) {
   font-size: var(--text-label);
   letter-spacing: 0.08em;
   color: var(--ink-faint);
+}
+
+/* the second line stays quieter than the first — an aside, not a headline */
+.picker-instruction--quiet {
+  color: color-mix(in srgb, var(--ink-faint) 70%, transparent);
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+/* the diptych entry: present, never shouting */
+.picker-compare {
+  align-self: flex-start;
+  color: var(--ink-faint);
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.picker-compare:hover,
+.picker-compare:focus-visible {
+  color: var(--ink);
 }
 
 /* not-found / error: same register, slightly present — never alarm styling */

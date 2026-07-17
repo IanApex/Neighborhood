@@ -1,11 +1,12 @@
 {
-  "schemaVersion": "0.2.0",
-  "generatedAt": "2026-07-14T00:02:25.899Z",
+  "schemaVersion": "0.3.0",
+  "generatedAt": "2026-07-17T22:51:04.000Z",
   "sources": {
     "geocoding": "US Census Bureau Geocoder (Public_AR_Current)",
     "demographics": "US Census Bureau ACS 5-year (2024)",
     "amenities": "OpenStreetMap contributors, via Overpass API",
-    "geography": "OpenStreetMap contributors, via Overpass API"
+    "geography": "OpenStreetMap contributors, via Overpass API",
+    "historicPlaces": "National Register of Historic Places, National Park Service"
   },
   "input": {
     "coordinates": {
@@ -29,10 +30,20 @@
         "tractName": "Census Tract 814.02; Cook County; Illinois",
         "medianYearBuilt": 2002,
         "population": 6687,
+        "medianAge": 35.2,
         "tenure": {
           "totalOccupied": 3950,
           "ownerOccupied": 1198,
           "renterOccupied": 2752
+        },
+        "commute": {
+          "droveAlone": 1095,
+          "carpooled": 64,
+          "publicTransit": 535,
+          "bicycle": 126,
+          "walked": 1275,
+          "workedFromHome": 1043,
+          "total": 4422
         }
       },
       "yearBuilt": {
@@ -130,9 +141,9 @@
         ],
         "namedLandforms": []
       },
+      "holc": null,
       "canopy": null,
-      "historicalMaps": null,
-      "holc": null
+      "historicalMaps": null
     }
   },
   "addressContext": {
@@ -778,6 +789,32 @@
           "lon": -87.6184879
         }
       ]
-    }
+    },
+    "historicPlaces": [
+      {
+        "name": "USS SILVERSIDES (SS 236) National Historic Landmark",
+        "listedYear": 1972,
+        "category": "structure",
+        "lat": 41.89086,
+        "lon": -87.60817,
+        "distanceM": 100
+      },
+      {
+        "name": "SS CLIPPER",
+        "listedYear": 1983,
+        "category": "structure",
+        "lat": 41.89104,
+        "lon": -87.60708,
+        "distanceM": 146
+      },
+      {
+        "name": "Buildings at 860--880 Lake Shore Drive",
+        "listedYear": 1980,
+        "category": "building",
+        "lat": 41.89872,
+        "lon": -87.61872,
+        "distanceM": 1146
+      }
+    ]
   }
 }

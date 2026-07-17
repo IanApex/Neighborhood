@@ -415,6 +415,121 @@ async function beginWalking() {
   window.__walkingReady = true; // smoke-test hook
 }
 
+// ——— the history movement (phase 5) ———
+// The HOLC polygon renders as a hairline boundary with a LOW-opacity wash
+// in a muted, lightened rendition of the archival grade color — a quotation
+// of the primary source, the one sanctioned exception to the single-palette
+// rule. Never saturated. Historic places get small dated labels, same pin
+// discipline as walking: named only, in sync with the prose.
+
+const HOLC_HUES = { A: '#87a97e', B: '#8aacb2', C: '#cbb96a', D: '#bf8a92' };
+let holcLabelMarker = null;
+let historyMarkers = [];
+let historyClosed = false; // a fast scroll can end the movement before begin resolves
+
+async function beginHistory() {
+  try {
+    await styleReady;
+  } catch {
+    return;
+  }
+  if (historyClosed) return;
+  const holc = props.dossier.tractCore.layers.holc;
+  if (!holc?.polygon) return;
+  const color = HOLC_HUES[holc.grade] ?? tokens.ink;
+  if (!map.getSource('holc-area')) {
+    map.addSource('holc-area', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: { type: 'MultiPolygon', coordinates: holc.polygon },
+        properties: {},
+      },
+    });
+    map.addLayer({
+      id: 'holc-wash',
+      type: 'fill',
+      source: 'holc-area',
+      paint: { 'fill-color': color, 'fill-opacity': 0 },
+    });
+    map.addLayer({
+      id: 'holc-line',
+      type: 'line',
+      source: 'holc-area',
+      paint: { 'line-color': color, 'line-width': 1.1, 'line-opacity': 0 },
+    });
+  }
+  const dur = props.reducedMotion ? 0 : 1500;
+  for (const [id, prop, value] of [
+    ['holc-wash', 'fill-opacity', 0.13],
+    ['holc-line', 'line-opacity', 0.55],
+  ]) {
+    map.setPaintProperty(id, `${prop}-transition`, { duration: dur });
+    map.setPaintProperty(id, prop, value);
+  }
+  if (!holcLabelMarker) {
+    const el = document.createElement('div');
+    el.className = 'holc-label';
+    const year = holc.year ? ` — ${holc.year}` : '';
+    el.textContent = `Graded ${holc.grade} — “${(holc.category ?? '').toLowerCase()}”${year}`;
+    const { anchor } = props.dossier.addressContext;
+    holcLabelMarker = new maplibregl.Marker({ element: el, anchor: 'left', offset: [14, -20] })
+      .setLngLat([anchor.lon, anchor.lat])
+      .addTo(map);
+    requestAnimationFrame(() => el.classList.add('holc-label--in'));
+  }
+}
+
+// Small dated labels at historic places' coordinates, as the prose reaches
+// them. Only named, coordinate-bearing entries are ever plotted.
+function addHistoricPlaces(places) {
+  for (const place of places) {
+    if (place.lat == null || place.lon == null) continue;
+    const el = document.createElement('div');
+    el.className = 'map-pin map-pin--historic';
+    const dot = document.createElement('span');
+    dot.className = 'map-pin__dot';
+    const label = document.createElement('span');
+    label.className = 'map-pin__label';
+    label.textContent = place.listedYear ? `${place.name} · ${place.listedYear}` : place.name;
+    el.append(dot, label);
+    const marker = new maplibregl.Marker({ element: el, anchor: 'left' })
+      .setLngLat([place.lon, place.lat])
+      .addTo(map);
+    historyMarkers.push(marker);
+    requestAnimationFrame(() => el.classList.add('map-pin--in'));
+  }
+}
+
+// The wash fades out as the movement ends — the grade is a page of the
+// record, not a permanent tint on the present-day map.
+function endHistory() {
+  historyClosed = true;
+  if (map?.getLayer('holc-wash')) {
+    const dur = props.reducedMotion ? 0 : 1200;
+    for (const [id, prop] of [
+      ['holc-wash', 'fill-opacity'],
+      ['holc-line', 'line-opacity'],
+    ]) {
+      map.setPaintProperty(id, `${prop}-transition`, { duration: dur });
+      map.setPaintProperty(id, prop, 0);
+    }
+  }
+  holcLabelMarker?.getElement().classList.remove('holc-label--in');
+  for (const m of historyMarkers) m.getElement().classList.remove('map-pin--in');
+  const doomedLabel = holcLabelMarker;
+  const doomedPins = historyMarkers;
+  holcLabelMarker = null;
+  historyMarkers = [];
+  setTimeout(
+    () => {
+      doomedLabel?.remove();
+      doomedPins.forEach((m) => m.remove());
+    },
+    props.reducedMotion ? 0 : 900,
+  );
+}
+
 // Only named examples with coordinates are ever plotted. Anonymous counts
 // remain prose — never pin what isn't named.
 function addPins(examples) {
@@ -452,7 +567,20 @@ function snapshotMap() {
   });
 }
 
-async function exportPortrait({ dedication, tractLine, decades, totalUnits, vacancy }) {
+// Compose the portrait page and return the canvas; exportPortrait downloads
+// it. Split so diptych mode can stitch two composed portraits into one
+// combined save. `attribution: false` leaves the line off (the combined
+// image draws it once); `holcShown` appends the Mapping Inequality credit —
+// REQUIRED (CC BY-NC 4.0) whenever the HOLC layer appeared in the essay.
+async function composePortrait({
+  dedication,
+  tractLine,
+  decades,
+  totalUnits,
+  vacancy,
+  attribution = true,
+  holcShown = false,
+}) {
   const W = 1080;
   const H = 1440;
   const out = document.createElement('canvas');
@@ -539,22 +667,87 @@ async function exportPortrait({ dedication, tractLine, decades, totalUnits, vaca
     ctx.fillText(counts, margin, band.y + band.h + 44);
   }
 
-  // Required attribution: the map is ODbL-derived, the figures are Census.
-  ctx.font = `12px ${tokens.sans}`;
-  ctx.fillStyle = tokens.ink;
-  ctx.globalAlpha = 0.55;
-  ctx.fillText('© OpenStreetMap contributors · U.S. Census Bureau', margin, H - 40);
-  ctx.globalAlpha = 1;
+  // Required attribution: the map is ODbL-derived, the figures are Census;
+  // Mapping Inequality joins ONLY when the HOLC layer was shown.
+  if (attribution) {
+    ctx.font = `12px ${tokens.sans}`;
+    ctx.fillStyle = tokens.ink;
+    ctx.globalAlpha = 0.55;
+    ctx.fillText(attributionLine(holcShown), margin, H - 40);
+    ctx.globalAlpha = 1;
+  }
 
+  return out;
+}
+
+function attributionLine(holcShown) {
+  return (
+    '© OpenStreetMap contributors · U.S. Census Bureau' +
+    (holcShown ? ' · Mapping Inequality, Univ. of Richmond (CC BY-NC 4.0)' : '')
+  );
+}
+
+async function exportPortrait(opts) {
+  const out = await composePortrait(opts);
   const a = document.createElement('a');
   a.href = out.toDataURL('image/png');
   a.download = `neighborhood-${props.dossier.tractCore.tract.geoid}.png`;
   a.click();
 }
 
+// Diptych save: portrait one (already composed, passed as a data URL) beside
+// this essay's portrait, one combined image, attribution drawn ONCE — with
+// the Mapping Inequality credit when either page showed the HOLC layer.
+async function exportDiptych(first, opts) {
+  const second = await composePortrait({ ...opts, attribution: false });
+  const firstImg = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = first.image;
+  });
+  const W = 2160;
+  const H = 1440;
+  const out = document.createElement('canvas');
+  out.width = W;
+  out.height = H;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = tokens.paper;
+  ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(firstImg, 0, 0, 1080, 1440);
+  ctx.drawImage(second, 1080, 0, 1080, 1440);
+  ctx.strokeStyle = tokens.hairline;
+  ctx.beginPath();
+  ctx.moveTo(1080.5, 72);
+  ctx.lineTo(1080.5, H - 72);
+  ctx.stroke();
+  ctx.font = `12px ${tokens.sans}`;
+  ctx.fillStyle = tokens.ink;
+  ctx.globalAlpha = 0.55;
+  ctx.fillText(attributionLine(first.holcShown || opts.holcShown), 72, H - 40);
+  ctx.globalAlpha = 1;
+  const a = document.createElement('a');
+  a.href = out.toDataURL('image/png');
+  a.download = `neighborhood-diptych-${props.dossier.tractCore.tract.geoid}.png`;
+  a.click();
+}
+
 const youPosition = () => (youLngLat ? { lat: youLngLat.lat, lon: youLngLat.lng } : null);
 
-defineExpose({ beginArrival, beginWalking, addPins, walkTo, youPosition, exportPortrait, failed });
+defineExpose({
+  beginArrival,
+  beginWalking,
+  beginHistory,
+  addHistoricPlaces,
+  endHistory,
+  addPins,
+  walkTo,
+  youPosition,
+  exportPortrait,
+  composePortrait,
+  exportDiptych,
+  failed,
+});
 
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
@@ -720,6 +913,37 @@ onUnmounted(() => {
 
 .map-pin--place .map-pin__dot { background: var(--place); }
 .map-pin--park .map-pin__dot { background: var(--park); }
+
+/* Historic places: dated entries from the Register — a hollow dot, the
+   oldest named facts rendered in the same quiet pin language. */
+.map-pin--historic .map-pin__dot {
+  background: transparent;
+  border: 1.5px solid var(--ink);
+}
+
+/* The HOLC label: utility sans, a quotation of the record, never shouting. */
+.holc-label {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 900ms var(--ease-settle);
+}
+
+.holc-label--in {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holc-label {
+    transition: opacity 300ms ease;
+  }
+}
 
 .map-pin__label {
   font-family: var(--sans);

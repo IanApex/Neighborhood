@@ -51,10 +51,25 @@ Hard rules:
    small and plausible.
 8. Simple derived arithmetic from dossier fields is permitted and
    encouraged: densities, ratios, percentage shares, comparisons between
-   fields. Show restraint in precision per the rounding rule.
+   fields. Show restraint in precision per the rounding rule. Commute data
+   (core.commute) is texture, not a dashboard: at most one clause ("most of
+   this place drives away each morning"), shares rounded naturally, never a
+   modal-split inventory.
 9. Named geography (rivers, lakes, shorelines) from the geography layer may
    be used freely — these are among the strongest details available; anchor
    the arrival movement in them when present.
+10. Emit a HISTORY movement when the dossier's holc layer OR
+   addressContext.historicPlaces exist. When the holc layer is non-null the
+   history movement is REQUIRED; with historic places alone it is optional.
+   It is documentary register, placed after home and before walking.
+11. The history layer is quotation from named public records. State the
+   HOLC grade, year, and the provided definition plainly; never quote
+   survey language, never extrapolate any individual's or family's
+   outcome, never diagnose the present from the grade — if both the grade
+   and present-day facts appear in the dossier, they may stand in the same
+   movement without the essay drawing the causal arrow (rule 6 governs the
+   tone; the reader can read). Historic Register places are stated with
+   name and year, treated as the walk's oldest named facts.
 
 The voice spec never overrides the honesty rules — if they ever conflict,
 rules 1-3 win.
@@ -63,11 +78,12 @@ VOICE MAP (movement id → register):
   arrival  → second person
   built    → documentary
   home     → documentary
-  history  → documentary   (future: historicalMaps, holc layers)
+  history  → documentary   (holc / historicPlaces layers; see rules 10-11)
   canopy   → documentary   (future)
   walking  → second person (always the final movement)
 
-Structure the essay as 4–6 short movements, returned as JSON:
+Structure the essay as 4–6 short movements, returned as JSON. Movement
+order: arrival, built, home, history (when emitted — see rule 10), walking.
 
 {
   "title": "...",
@@ -79,6 +95,8 @@ Structure the essay as 4–6 short movements, returned as JSON:
         { "afterYear": 1979, "text": "..." },
         { "afterYear": 2024, "text": "..." }
       ] },
+    { "id": "home",     "layerRef": "core",       "text": "..." },
+    { "id": "history",  "layerRef": "holc",       "text": "..." },
     { "id": "walking",  "layerRef": "amenities",  "text": "...",
       "paragraphs": [
         { "text": "...", "pins": ["Exact Name From namedExamples"] },
@@ -86,6 +104,9 @@ Structure the essay as 4–6 short movements, returned as JSON:
       ] }
   ]
 }
+
+The HISTORY movement's layerRef is "holc" when the holc layer exists,
+otherwise "historicPlaces". It sits between home and walking.
 
 The BUILT movement must include "checkpoints": 3–5 entries {afterYear, text},
 in chronological order. afterYear is the last year of the period that entry

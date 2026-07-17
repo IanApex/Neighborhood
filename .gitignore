@@ -5,3 +5,7 @@ frontend/smoke-out/
 worker/.dev.vars
 frontend/.env.local
 .wrangler/
+data/holc-src.json
+data/holc/
+data/nrhp/
+data/kv/

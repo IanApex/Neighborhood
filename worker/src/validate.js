@@ -33,6 +33,19 @@ export function validateEssay(essay, dossier = null) {
   if (ids.includes('arrival') && ids[0] !== 'arrival') errors.push('arrival must be first');
   if (ids.includes('walking') && ids[ids.length - 1] !== 'walking') errors.push('walking must be last');
 
+  // The record's hardest page may not be skipped: a non-null holc layer
+  // REQUIRES a history movement (historic places alone leave it optional).
+  // When present it sits after home (if home exists) and before walking.
+  if (dossier?.tractCore?.layers?.holc && !ids.includes('history'))
+    errors.push('history movement required when the holc layer exists');
+  if (ids.includes('history')) {
+    const h = ids.indexOf('history');
+    if (ids.includes('home') && h < ids.indexOf('home'))
+      errors.push('history movement must come after home');
+    if (ids.includes('walking') && h > ids.indexOf('walking'))
+      errors.push('history movement must come before walking');
+  }
+
   const built = movements.find((m) => m?.id === 'built');
   if (built && dossier?.tractCore?.layers?.yearBuilt) {
     if (!Array.isArray(built.checkpoints) || built.checkpoints.length < 3 || built.checkpoints.length > 5) {

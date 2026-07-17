@@ -29,6 +29,17 @@ export function synthesisView(dossier) {
     yearBuilt.buckets = yearBuilt.buckets.map(({ variable, ...rest }) => rest);
   }
 
+  // The HOLC polygon is frontend overlay geometry, never narrative material.
+  const holc = view.tractCore?.layers?.holc;
+  if (holc) delete holc.polygon;
+
+  // Historic places keep name/year/category/distance; coordinates are map
+  // geometry (same treatment as namedExamples).
+  const places = view.addressContext?.historicPlaces;
+  if (places?.length) {
+    view.addressContext.historicPlaces = places.map(({ lat, lon, ...rest }) => rest);
+  }
+
   return view;
 }
 

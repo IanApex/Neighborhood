@@ -10,7 +10,27 @@ import { fixtureFor } from './fixtures/index.js';
 // never knows the difference.
 const picked = ref(null); // {geoid,...} | {live:{...}} | {data, addressText}
 
+// Diptych ("then & now"), v1 sequential: address one runs a full essay;
+// its closing offers address two, whose essay is synthesized WITH dossier
+// one as comparison context. Both portraits close the pair.
+const compareStage = ref(null); // null | 'first' | 'second'
+const diptychFirst = ref(null); // {image, addressText, holcShown, geoid, grid}
+
+// Same rounding as the worker's gridCell — the comparison cache key must
+// name the exact walkshed cell essay one cached under.
+const gridOf = ({ lat, lon }) =>
+  `${(Math.round(lat * 500) / 500).toFixed(3)},${(Math.round(lon * 500) / 500).toFixed(3)}`;
+
 function onPick(payload) {
+  // Stage two rides with the request: the worker loads dossier one from its
+  // cache and appends it as COMPARISON CONTEXT.
+  if (payload.live && compareStage.value === 'second' && diptychFirst.value) {
+    payload.live.requestBody = {
+      ...payload.live.requestBody,
+      compareGeoid: diptychFirst.value.geoid,
+      compareGrid: diptychFirst.value.grid,
+    };
+  }
   picked.value = payload;
 }
 
@@ -21,8 +41,27 @@ function onLiveReady(json) {
   };
 }
 
+// Essay one's closing handed over its composed portrait — remember it (plus
+// the cache coordinates the worker needs) and return to the input for
+// address two.
+function onDiptychNext(first) {
+  const dossier = picked.value?.data?.dossier;
+  if (!dossier) return;
+  diptychFirst.value = {
+    ...first,
+    addressText: picked.value.addressText,
+    geoid: dossier.tractCore.tract.geoid,
+    grid: gridOf(dossier.addressContext.anchor),
+  };
+  compareStage.value = 'second';
+  picked.value = null;
+  window.scrollTo(0, 0);
+}
+
 function reset() {
   picked.value = null;
+  compareStage.value = null;
+  diptychFirst.value = null;
   window.scrollTo(0, 0);
 }
 
@@ -52,13 +91,16 @@ onMounted(() => {
 <template>
   <EssayExperience
     v-if="picked && (picked.geoid || picked.data)"
-    :key="picked.geoid ?? 'live'"
+    :key="picked.geoid ?? (compareStage ?? 'live')"
     :geoid="picked.geoid ?? null"
     :data="picked.data ?? null"
     :ritual-done="!!picked.data"
     :address-text="picked.addressText"
     :from-rect="picked.fromRect ?? null"
+    :diptych-stage="picked.data ? compareStage : null"
+    :diptych-first="compareStage === 'second' ? diptychFirst : null"
     @close="reset"
+    @diptych-next="onDiptychNext"
   />
   <LiveRitual
     v-else-if="picked?.live"
@@ -70,5 +112,5 @@ onMounted(() => {
     @ready="onLiveReady"
     @close="reset"
   />
-  <TractPicker v-else @pick="onPick" />
+  <TractPicker v-else :compare-stage="compareStage" @pick="onPick" @compare="compareStage = 'first'" />
 </template>

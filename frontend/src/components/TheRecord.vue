@@ -17,7 +17,9 @@ const tract = props.dossier.tractCore.tract;
 const core = props.dossier.tractCore.layers.core;
 const yearBuilt = props.dossier.tractCore.layers.yearBuilt;
 const geography = props.dossier.tractCore.layers.geography;
+const holc = props.dossier.tractCore.layers.holc;
 const amenities = props.dossier.addressContext.amenities;
+const historicPlaces = props.dossier.addressContext.historicPlaces ?? [];
 
 const fmt = (n) => n.toLocaleString('en-US');
 const km2 = (m2) => (m2 / 1e6).toLocaleString('en-US', { maximumFractionDigits: 2 });
@@ -128,6 +130,23 @@ onMounted(() => {
       </p>
     </section>
 
+    <section v-if="holc || historicPlaces.length" class="record-section">
+      <h3 class="record-label">History</h3>
+      <dl v-if="holc" class="record-list">
+        <div><dt>HOLC grade</dt><dd>{{ holc.grade }}</dd></div>
+        <div><dt>Category</dt><dd>{{ holc.category }}</dd></div>
+        <div><dt>City surveyed</dt><dd>{{ holc.city }}</dd></div>
+        <div v-if="holc.year"><dt>Map year</dt><dd>{{ holc.year }}</dd></div>
+      </dl>
+      <p v-if="holc" class="record-arithmetic">{{ holc.definition }}</p>
+      <dl v-if="historicPlaces.length" class="record-list" :class="{ 'record-history-places': holc }">
+        <div v-for="p in historicPlaces" :key="p.name">
+          <dt>{{ p.name }}</dt>
+          <dd>{{ p.listedYear ?? '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+
     <section v-if="geographyItems.length" class="record-section">
       <h3 class="record-label">Named Geography</h3>
       <p class="record-runin">{{ geographyItems.join(' · ') }}</p>
@@ -150,6 +169,8 @@ onMounted(() => {
         <div><dt>Geocoding</dt><dd>{{ dossier.sources.geocoding }}</dd></div>
         <div><dt>Amenities</dt><dd>{{ dossier.sources.amenities }}</dd></div>
         <div v-if="dossier.sources.geography"><dt>Geography</dt><dd>{{ dossier.sources.geography }}</dd></div>
+        <div v-if="dossier.sources.holc"><dt>HOLC grades</dt><dd>{{ dossier.sources.holc }}</dd></div>
+        <div v-if="dossier.sources.historicPlaces"><dt>Historic places</dt><dd>{{ dossier.sources.historicPlaces }}</dd></div>
         <div><dt>Generated</dt><dd>{{ generatedAt }}</dd></div>
       </dl>
       <p class="record-closing">Every statement in this essay derives from the records above.</p>
@@ -252,6 +273,10 @@ onMounted(() => {
   font-size: 0.875rem;
   line-height: 1.9;
   margin: 0;
+}
+
+.record-history-places {
+  margin-top: var(--space-2);
 }
 
 .record-closing {

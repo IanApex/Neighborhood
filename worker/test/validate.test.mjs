@@ -165,6 +165,56 @@ test('walking pins must be an array', () => {
   assert.ok(validateEssay(e, dossier()).some((x) => /pins must be an array/.test(x)));
 });
 
+// ——— history movement (phase 5) ———
+
+const holcDossier = () => {
+  const d = dossier();
+  d.tractCore.layers.holc = {
+    grade: 'D',
+    category: 'Hazardous',
+    city: 'Detroit',
+    year: null,
+    definition: 'graded urban neighborhoods for mortgage security',
+  };
+  return d;
+};
+
+const withHistory = (essay, layerRef = 'holc') => {
+  essay.movements.splice(3, 0, movement('history', layerRef));
+  return essay;
+};
+
+test('history movement required when holc layer exists', () => {
+  assert.ok(
+    validateEssay(goodLive(), holcDossier()).some((x) => /history movement required/.test(x)),
+  );
+});
+
+test('history movement satisfies the holc requirement', () => {
+  assert.deepEqual(validateEssay(withHistory(goodLive()), holcDossier()), []);
+});
+
+test('history movement optional with historic places alone', () => {
+  const d = dossier();
+  d.addressContext.historicPlaces = [{ name: 'Old Mill', listedYear: 1978 }];
+  assert.deepEqual(validateEssay(goodLive(), d), []);
+  assert.deepEqual(validateEssay(withHistory(goodLive(), 'historicPlaces'), d), []);
+});
+
+test('history must come after home', () => {
+  const e = withHistory(goodLive());
+  const history = e.movements.splice(3, 1)[0];
+  e.movements.splice(2, 0, history); // before home
+  assert.ok(validateEssay(e, holcDossier()).some((x) => /after home/.test(x)));
+});
+
+test('history must come before walking', () => {
+  const e = goodLive();
+  e.movements.push(movement('history'));
+  const errors = validateEssay(e, holcDossier());
+  assert.ok(errors.some((x) => /before walking|walking must be last/.test(x)));
+});
+
 test('parseEssayJson strips code fences', () => {
   const parsed = parseEssayJson('```json\n{"title": "X"}\n```');
   assert.equal(parsed.title, 'X');

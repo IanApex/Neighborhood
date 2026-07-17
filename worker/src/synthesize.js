@@ -18,7 +18,10 @@ export function systemFromPromptFile(text = promptFile) {
   return parts[1].trim();
 }
 
-export async function synthesizeEssay(env, trimmedDossier) {
+// `compare` (optional) is a second trimmed dossier appended as COMPARISON
+// CONTEXT — the prompt has supported it since phase 2; the schema is
+// unchanged and every movement is still about the primary place.
+export async function synthesizeEssay(env, trimmedDossier, compare = null) {
   const started = Date.now();
 
   // Dev affordance: without an ANTHROPIC_API_KEY (e.g. `wrangler dev` before
@@ -43,12 +46,18 @@ export async function synthesizeEssay(env, trimmedDossier) {
   const ask = (extra = '') =>
     client.messages.create({
       model: MODEL,
-      max_tokens: 1500,
+      // Sized for the full phase-5 shape: up to 6 movements, with built and
+      // walking text carried twice (checkpoints/paragraphs + joined text).
+      // 1500 truncated real essays mid-string once history arrived.
+      max_tokens: 3000,
       system,
       messages: [
         {
           role: 'user',
-          content: `DOSSIER:\n${JSON.stringify(trimmedDossier)}${extra}`,
+          content:
+            `DOSSIER:\n${JSON.stringify(trimmedDossier)}` +
+            (compare ? `\n\nCOMPARISON CONTEXT:\n${JSON.stringify(compare)}` : '') +
+            extra,
         },
       ],
     });
@@ -59,7 +68,7 @@ export async function synthesizeEssay(env, trimmedDossier) {
     const response = await ask(
       attempt === 0
         ? ''
-        : `\n\nYour previous reply was invalid (${lastErrors.join('; ')}). Return ONLY the JSON object, matching the schema exactly: 4-6 movements, arrival first, walking last, each {id, layerRef, text}. The built movement must carry "checkpoints": 3-5 {afterYear, text} entries with strictly ascending afterYears at the dossier's bucket boundaries, each text describing only construction up to its afterYear, joined texts = the movement text. The walking movement must carry "paragraphs": 2-4 {text, pins} entries where every pin is a name copied VERBATIM from the dossier's namedExamples ([] when a paragraph names nothing), joined texts = the movement text.`,
+        : `\n\nYour previous reply was invalid (${lastErrors.join('; ')}). Return ONLY the JSON object, matching the schema exactly: 4-6 movements, arrival first, walking last, each {id, layerRef, text}. The built movement must carry "checkpoints": 3-5 {afterYear, text} entries with strictly ascending afterYears at the dossier's bucket boundaries, each text describing only construction up to its afterYear, joined texts = the movement text. The walking movement must carry "paragraphs": 2-4 {text, pins} entries where every pin is a name copied VERBATIM from the dossier's namedExamples ([] when a paragraph names nothing), joined texts = the movement text. When the dossier's holc layer is non-null a "history" movement is REQUIRED (documentary register, after home, before walking): state the grade, year, and the layer's definition plainly per rule 11 — never quote survey language, never draw the causal arrow to the present.`,
     );
     usage = response.usage;
     const text = response.content.find((b) => b.type === 'text')?.text ?? '';
@@ -118,6 +127,25 @@ function mockEssay(view) {
     { text: p('The rest of the walkshed stays in the prose, unnamed.'), pins: [] },
   ];
 
+  // History movement whenever the validator would require or allow one, so
+  // keyless dev exercises the same frontend paths as live synthesis.
+  const holc = view.tractCore.layers.holc;
+  const places = view.addressContext?.historicPlaces ?? [];
+  const history =
+    holc || places.length
+      ? [
+          {
+            id: 'history',
+            layerRef: holc ? 'holc' : 'historicPlaces',
+            text: p(
+              holc
+                ? `The federal record grades this area ${holc.grade}, "${holc.category}".`
+                : `The register lists ${places[0]?.name ?? 'a place'} (${places[0]?.listedYear ?? 'year unknown'}).`,
+            ),
+          },
+        ]
+      : [];
+
   return {
     placeholder: true,
     note: 'MOCK essay from worker dev mode (no ANTHROPIC_API_KEY).',
@@ -131,6 +159,7 @@ function mockEssay(view) {
         checkpoints,
       },
       { id: 'home', layerRef: 'core', text: p(`The record finds ${core?.tenure?.totalOccupied ?? 'some'} households here.`) },
+      ...history,
       {
         id: 'walking',
         layerRef: 'amenities',

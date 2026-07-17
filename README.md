@@ -59,6 +59,28 @@ Output lands in `data/dossier-<GEOID>.json`. To print the trimmed synthesis
 view of a dossier (what goes into the narrative prompt — no raw counts or
 map geometry):
 
+### Historical layers (phase 5)
+
+The HOLC and National Register layers read local geohash partitions that are
+NOT committed (they're derived data). Rebuild them any time:
+
+```
+node scripts/build-holc.mjs    # Mapping Inequality → data/holc/ + data/kv/holc-bulk-*.json
+node scripts/build-nrhp.mjs    # NPS National Register → data/nrhp/ + data/kv/nrhp-bulk-*.json
+```
+
+Upload to the worker's KV namespace (repeat per bulk file):
+
+```
+cd worker
+npx wrangler kv bulk put ../data/kv/holc-bulk-0.json --namespace-id=<ESSAYS id> --remote
+npx wrangler kv bulk put ../data/kv/nrhp-bulk-0.json --namespace-id=<ESSAYS id> --remote
+```
+
+HOLC data is CC BY-NC 4.0 (Mapping Inequality, Digital Scholarship Lab,
+University of Richmond): attribution required wherever the layer appears,
+noncommercial forever. NRHP data is public domain (NPS).
+
 ```
 npm run synthesis-view data/dossier-<GEOID>.json
 ```

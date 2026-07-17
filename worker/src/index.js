@@ -14,6 +14,7 @@ import { tractFromAddress, tractFromCoordinates } from '../../src/geocode.js';
 import { fetchCoreStats, fetchYearBuiltDistribution } from '../../src/acs.js';
 import { fetchAmenities } from '../../src/overpass.js';
 import { fetchGeography } from '../../src/geography.js';
+import { fetchHolc, fetchHistoricPlaces } from '../../src/history.js';
 import { synthesisView } from '../../src/dossier-view.js';
 import { synthesizeEssay } from './synthesize.js';
 
@@ -21,7 +22,9 @@ import { synthesizeEssay } from './synthesize.js';
 // key): essays cached under an older schema regenerate instead of being
 // served without the fields the frontend now expects.
 // v2: built.checkpoints + walking.paragraphs required.
-const ESSAY_SCHEMA_VERSION = 2;
+// v3: history movement required when the holc layer exists; dossier gains
+//     holc/historicPlaces/commute/medianAge (phase 5).
+const ESSAY_SCHEMA_VERSION = 3;
 
 const TRACT_CACHE_TTL = 60 * 60 * 24 * 30; // tractCore+essay: 30 days
 const OVERPASS_CACHE_TTL = 60 * 60 * 24 * 30; // Overpass etiquette at the edge
@@ -98,18 +101,35 @@ export default {
       ? { ...geo.location, source: 'input-point' }
       : { ...tract.centroid, source: 'tract-centroid' };
 
+    // Diptych mode: an essay synthesized WITH comparison context depends on
+    // BOTH places, so it caches under its own :vs: key — never the plain
+    // key, or solo readers of this tract would inherit someone else's
+    // comparison. Params are validated strictly (they become KV key parts).
+    const compareGeoid = /^\d{11}$/.test(body.compareGeoid ?? '') ? body.compareGeoid : null;
+    const compareGrid =
+      compareGeoid && /^-?\d{1,2}\.\d{3},-?\d{1,3}\.\d{3}$/.test(body.compareGrid ?? '')
+        ? body.compareGrid
+        : null;
+
     // 2/3. tractCore + essay: KV by GEOID + anchor grid cell; on miss run
     // the pipeline + synthesize.
     const started = Date.now();
-    const tractKey = `tract${ESSAY_SCHEMA_VERSION}:${tract.geoid}:${gridCell(anchor)}`;
+    const tractKey =
+      `tract${ESSAY_SCHEMA_VERSION}:${tract.geoid}:${gridCell(anchor)}` +
+      (compareGeoid ? `:vs:${compareGeoid}` : '');
     let cached = await env.ESSAYS.get(tractKey, 'json');
 
     // 4. addressContext is ALWAYS fresh (per-address by design) — start it in
     //    parallel with whatever else we need. Amenities may be null; the
     //    dossier has gaps and the essay adapts.
+    const kvPartition = (prefix, cell) => env.ESSAYS.get(`${prefix}:${cell}`, 'json');
     const amenitiesPromise = fetchAmenitiesCached(env, ctx, anchor).catch((err) => {
       console.log(JSON.stringify({ warn: 'amenities_failed', detail: err.message }));
       return null;
+    });
+    const historicPlacesPromise = fetchHistoricPlaces(kvPartition, anchor).catch((err) => {
+      console.log(JSON.stringify({ warn: 'nrhp_failed', detail: err.message }));
+      return [];
     });
 
     let tractCore;
@@ -118,11 +138,12 @@ export default {
       ({ tractCore, essay } = cached);
     } else {
       const settle = (r) => (r.status === 'fulfilled' ? r.value : null);
-      const [core, yearBuilt, geography] = (
+      const [core, yearBuilt, geography, holc] = (
         await Promise.allSettled([
           fetchCoreStats(tract),
           fetchYearBuiltDistribution(tract),
           fetchGeography(tract),
+          fetchHolc(kvPartition, anchor, tract.centroid),
         ])
       ).map(settle);
 
@@ -134,13 +155,15 @@ export default {
           areaLandSqM: tract.areaLand,
           areaWaterSqM: tract.areaWater,
         },
-        layers: { core, yearBuilt, geography, canopy: null, historicalMaps: null, holc: null },
+        layers: { core, yearBuilt, geography, holc, canopy: null, historicalMaps: null },
       };
 
       // Synthesis sees the same dossier shape the fixtures use, trimmed.
       const amenities = await amenitiesPromise;
-      const draft = assembleDossier(env, geo, tract, tractCore, anchor, amenities);
-      const result = await synthesizeEssay(env, synthesisView(draft));
+      const historicPlaces = await historicPlacesPromise;
+      const draft = assembleDossier(env, geo, tract, tractCore, anchor, amenities, historicPlaces);
+      const compare = await comparisonView(env, compareGeoid, compareGrid);
+      const result = await synthesizeEssay(env, synthesisView(draft), compare);
 
       console.log(
         JSON.stringify({
@@ -162,30 +185,73 @@ export default {
           expirationTtl: TRACT_CACHE_TTL,
         }),
       );
-      return respond({ dossier: assembleDossier(env, geo, tract, tractCore, anchor, amenities), essay });
+      return respond({
+        dossier: assembleDossier(env, geo, tract, tractCore, anchor, amenities, historicPlaces),
+        essay,
+      });
     }
 
     const amenities = await amenitiesPromise;
+    const historicPlaces = await historicPlacesPromise;
     console.log(JSON.stringify({ geoid: tract.geoid, cache: 'hit', total_ms: Date.now() - started }));
-    return respond({ dossier: assembleDossier(env, geo, tract, tractCore, anchor, amenities), essay });
+    return respond({
+      dossier: assembleDossier(env, geo, tract, tractCore, anchor, amenities, historicPlaces),
+      essay,
+    });
   },
 };
 
 // EXACTLY the fixture shape (see src/assemble.js) — fixture parity is a rule.
-function assembleDossier(env, geo, tract, tractCore, anchor, amenities) {
+function assembleDossier(env, geo, tract, tractCore, anchor, amenities, historicPlaces) {
+  const holc = tractCore.layers?.holc;
   return {
-    schemaVersion: '0.2.0',
+    schemaVersion: '0.3.0',
     generatedAt: new Date().toISOString(),
     sources: {
       geocoding: 'US Census Bureau Geocoder (Public_AR_Current)',
       demographics: `US Census Bureau ACS 5-year (${env.ACS_YEAR ?? '2024'})`,
       amenities: 'OpenStreetMap contributors, via Overpass API',
       geography: 'OpenStreetMap contributors, via Overpass API',
+      // Attribution REQUIRED wherever the HOLC layer appears (CC BY-NC 4.0,
+      // noncommercial forever); included only when the layer is present.
+      ...(holc && {
+        holc: 'Mapping Inequality, Digital Scholarship Lab, University of Richmond (CC BY-NC 4.0)',
+      }),
+      ...(historicPlaces?.length && {
+        historicPlaces: 'National Register of Historic Places, National Park Service',
+      }),
     },
     input: geo.matchedAddress ? { matchedAddress: geo.matchedAddress } : { coordinates: geo.location },
     tractCore,
-    addressContext: { anchor, amenities },
+    addressContext: { anchor, amenities, historicPlaces: historicPlaces ?? [] },
   };
+}
+
+// The comparison context for diptych mode: dossier one, reconstructed from
+// what the pipeline already cached (its tract entry + its walkshed's
+// Overpass cache), trimmed exactly like the primary. Missing entries mean
+// the comparison quietly doesn't happen — a valid solo essay beats a 502.
+async function comparisonView(env, compareGeoid, compareGrid) {
+  if (!compareGeoid || !compareGrid) return null;
+  const entry = await env.ESSAYS.get(
+    `tract${ESSAY_SCHEMA_VERSION}:${compareGeoid}:${compareGrid}`,
+    'json',
+  );
+  if (!entry?.tractCore) {
+    console.log(JSON.stringify({ warn: 'compare_miss', compareGeoid }));
+    return null;
+  }
+  const amenities = await env.ESSAYS.get(`overpass:${compareGrid}:1200`, 'json');
+  const [lat, lon] = compareGrid.split(',').map(Number);
+  const anchor = { lat, lon, source: 'comparison-grid' };
+  const historicPlaces = await fetchHistoricPlaces(
+    (prefix, cell) => env.ESSAYS.get(`${prefix}:${cell}`, 'json'),
+    anchor,
+  ).catch(() => []);
+  return synthesisView({
+    tractCore: entry.tractCore,
+    addressContext: { anchor, amenities, historicPlaces },
+  });
 }
 
 // Overpass etiquette at the edge: cache responses in KV keyed by the shared
