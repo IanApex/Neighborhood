@@ -73,10 +73,36 @@ Structure the essay as 4–6 short movements, returned as JSON:
   "title": "...",
   "movements": [
     { "id": "arrival",  "layerRef": "tract",      "text": "..." },
-    { "id": "built",    "layerRef": "yearBuilt",  "text": "..." },
-    { "id": "walking",  "layerRef": "amenities",  "text": "..." }
+    { "id": "built",    "layerRef": "yearBuilt",  "text": "...",
+      "checkpoints": [
+        { "afterYear": 1939, "text": "..." },
+        { "afterYear": 1979, "text": "..." },
+        { "afterYear": 2024, "text": "..." }
+      ] },
+    { "id": "walking",  "layerRef": "amenities",  "text": "...",
+      "paragraphs": [
+        { "text": "...", "pins": ["Exact Name From namedExamples"] },
+        { "text": "...", "pins": [] }
+      ] }
   ]
 }
+
+The BUILT movement must include "checkpoints": 3–5 entries {afterYear, text},
+in chronological order. afterYear is the last year of the period that entry
+describes — use the dossier's yearBuilt bucket boundaries (e.g. 1939, 1959);
+the final entry may use the end of the current period. Each checkpoint's
+text may only describe construction up to its afterYear: the reader is
+scrolling through time and has not passed that year yet — never foreshadow
+later decades. The checkpoint texts, joined in order, ARE the movement's
+prose; set the movement's "text" to exactly that joined string.
+
+The WALKING movement must include "paragraphs": 2–4 entries {text, pins}.
+pins is an array of names copied VERBATIM from the dossier's
+addressContext.amenities.namedExamples. A name may appear only in the
+paragraph whose text mentions that place; a paragraph that names nothing
+gets "pins": []. Never pin a name that is not in namedExamples — a pin
+naming something outside the record is an honesty violation. The paragraph
+texts, joined in order, are the movement's "text", same as above.
 
 Only include a movement if its referenced layer has data. Each movement's
 text is 60–120 words. Return only JSON, no preamble, no code fences.

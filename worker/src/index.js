@@ -17,6 +17,12 @@ import { fetchGeography } from '../../src/geography.js';
 import { synthesisView } from '../../src/dossier-view.js';
 import { synthesizeEssay } from './synthesize.js';
 
+// Bump whenever the essay schema changes (it is part of the tract cache
+// key): essays cached under an older schema regenerate instead of being
+// served without the fields the frontend now expects.
+// v2: built.checkpoints + walking.paragraphs required.
+const ESSAY_SCHEMA_VERSION = 2;
+
 const TRACT_CACHE_TTL = 60 * 60 * 24 * 30; // tractCore+essay: 30 days
 const OVERPASS_CACHE_TTL = 60 * 60 * 24 * 30; // Overpass etiquette at the edge
 const RATE_LIMIT_PER_MINUTE = 5; // a few essays per minute is plenty
@@ -95,7 +101,7 @@ export default {
     // 2/3. tractCore + essay: KV by GEOID + anchor grid cell; on miss run
     // the pipeline + synthesize.
     const started = Date.now();
-    const tractKey = `tract:${tract.geoid}:${gridCell(anchor)}`;
+    const tractKey = `tract${ESSAY_SCHEMA_VERSION}:${tract.geoid}:${gridCell(anchor)}`;
     let cached = await env.ESSAYS.get(tractKey, 'json');
 
     // 4. addressContext is ALWAYS fresh (per-address by design) — start it in

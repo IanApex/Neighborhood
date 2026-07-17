@@ -3,7 +3,11 @@
 
 const KNOWN_IDS = new Set(['arrival', 'built', 'home', 'history', 'canopy', 'walking']);
 
-export function validateEssay(essay) {
+// dossier (the trimmed synthesis view) gates the layer-conditional checks:
+// built.checkpoints are required when yearBuilt data exists, and
+// walking.paragraphs (with pins verified against namedExamples) when
+// amenities exist. Without a dossier those checks are skipped.
+export function validateEssay(essay, dossier = null) {
   const errors = [];
   if (!essay || typeof essay !== 'object') return ['essay is not an object'];
   if (typeof essay.title !== 'string' || !essay.title.trim()) errors.push('title missing');
@@ -28,6 +32,51 @@ export function validateEssay(essay) {
   if (new Set(ids).size !== ids.length) errors.push('duplicate movement ids');
   if (ids.includes('arrival') && ids[0] !== 'arrival') errors.push('arrival must be first');
   if (ids.includes('walking') && ids[ids.length - 1] !== 'walking') errors.push('walking must be last');
+
+  const built = movements.find((m) => m?.id === 'built');
+  if (built && dossier?.tractCore?.layers?.yearBuilt) {
+    if (!Array.isArray(built.checkpoints) || built.checkpoints.length < 3 || built.checkpoints.length > 5) {
+      errors.push('built movement must carry 3-5 checkpoints {afterYear, text} when yearBuilt data exists');
+    } else {
+      let prev = -Infinity;
+      for (const [i, cp] of built.checkpoints.entries()) {
+        if (typeof cp?.text !== 'string' || !cp.text.trim())
+          errors.push(`built checkpoint ${i} text missing or empty`);
+        if (typeof cp?.afterYear !== 'number' || cp.afterYear < 1500 || cp.afterYear > 2100) {
+          errors.push(`built checkpoint ${i} afterYear is not a sane year`);
+        } else {
+          if (cp.afterYear <= prev) errors.push('built checkpoint afterYears must be strictly ascending');
+          prev = cp.afterYear;
+        }
+      }
+    }
+  }
+
+  const walking = movements.find((m) => m?.id === 'walking');
+  const namedExamples = dossier?.addressContext?.amenities?.namedExamples;
+  if (walking && dossier?.addressContext?.amenities) {
+    if (!Array.isArray(walking.paragraphs) || walking.paragraphs.length < 2 || walking.paragraphs.length > 4) {
+      errors.push('walking movement must carry 2-4 paragraphs {text, pins} when amenities exist');
+    } else {
+      // Pins are an honesty surface: every pin must name something the
+      // dossier actually records, or the essay is rejected.
+      const known = new Set(
+        (namedExamples ?? []).map((e) => e?.name?.trim().toLowerCase()).filter(Boolean),
+      );
+      for (const [i, p] of walking.paragraphs.entries()) {
+        if (typeof p?.text !== 'string' || !p.text.trim())
+          errors.push(`walking paragraph ${i} text missing or empty`);
+        if (!Array.isArray(p?.pins)) {
+          errors.push(`walking paragraph ${i} pins must be an array (use [] when nothing is named)`);
+          continue;
+        }
+        for (const pin of p.pins) {
+          if (typeof pin !== 'string' || !known.has(pin.trim().toLowerCase()))
+            errors.push(`walking paragraph ${i} pin "${pin}" does not match any namedExamples name`);
+        }
+      }
+    }
+  }
 
   return errors;
 }

@@ -145,6 +145,28 @@ essay JSONs are PLACEHOLDERS (marked `"placeholder": true`) written under
 the voice spec from dossier facts only — replace with real synthesis output
 as it's ratified; the loader treats both identically.
 
+Essay schema (fixtures and live are identical shapes BY RULE — the
+synthesis prompt requests these fields and `worker/src/validate.js`
+rejects essays without them):
+
+- `title` + `movements[]` of `{id, layerRef, text}`
+- the `built` movement REQUIRES `checkpoints`: 3–5 `{afterYear, text}`
+  entries, strictly ascending, at the dossier's yearBuilt bucket
+  boundaries; each text describes only construction up to its afterYear
+  (the reader hasn't scrolled past it); joined texts = the movement text
+- the `walking` movement REQUIRES `paragraphs`: 2–4 `{text, pins}`
+  entries; every pin is a name copied verbatim from the dossier's
+  `namedExamples` (validated case-insensitively — a pin naming something
+  not in the record is an honesty violation), `[]` when a paragraph names
+  nothing; joined texts = the movement text
+- the checkpoint/paragraph requirements are conditional on the layer
+  existing (no yearBuilt data → no built movement → no checkpoints)
+
+The frontend keeps even-chunking fallbacks for resilience, but they are
+fallbacks, not a supported shape. The KV tract cache key carries
+`ESSAY_SCHEMA_VERSION` (`worker/src/index.js`) — bump it with any essay
+schema change so stale cached essays regenerate.
+
 ## Worker architecture (phase 4, `worker/`)
 
 The live pipeline is a Cloudflare Worker (`POST /essay`, plus `POST /geocode`

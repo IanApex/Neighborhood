@@ -59,13 +59,13 @@ export async function synthesizeEssay(env, trimmedDossier) {
     const response = await ask(
       attempt === 0
         ? ''
-        : `\n\nYour previous reply was invalid (${lastErrors.join('; ')}). Return ONLY the JSON object, matching the schema exactly: 4-6 movements, arrival first, walking last, each {id, layerRef, text}.`,
+        : `\n\nYour previous reply was invalid (${lastErrors.join('; ')}). Return ONLY the JSON object, matching the schema exactly: 4-6 movements, arrival first, walking last, each {id, layerRef, text}. The built movement must carry "checkpoints": 3-5 {afterYear, text} entries with strictly ascending afterYears at the dossier's bucket boundaries, each text describing only construction up to its afterYear, joined texts = the movement text. The walking movement must carry "paragraphs": 2-4 {text, pins} entries where every pin is a name copied VERBATIM from the dossier's namedExamples ([] when a paragraph names nothing), joined texts = the movement text.`,
     );
     usage = response.usage;
     const text = response.content.find((b) => b.type === 'text')?.text ?? '';
     try {
       const essay = parseEssayJson(text);
-      const errors = validateEssay(essay);
+      const errors = validateEssay(essay, trimmedDossier);
       if (!errors.length) return { essay, usage, ms: Date.now() - started };
       lastErrors = errors;
     } catch (err) {
@@ -81,20 +81,62 @@ export async function synthesizeEssay(env, trimmedDossier) {
 }
 
 // Deterministic dossier-derived placeholder for keyless local dev. Passes
-// validation; clearly flagged so it can never be mistaken for the real thing.
+// validation (including the checkpoint/paragraph requirements, so keyless
+// dev exercises the same frontend paths as live synthesis); clearly flagged
+// so it can never be mistaken for the real thing.
 function mockEssay(view) {
   const tract = view.tractCore.tract;
   const core = view.tractCore.layers.core;
   const p = (s) => s.padEnd(60, ' … placeholder essay, dev mode, no ANTHROPIC_API_KEY set.');
+
+  // Checkpoint years from the dossier's actual bucket boundaries (first,
+  // middle, last), the same rule live synthesis follows.
+  const bucketYears = (view.tractCore.layers.yearBuilt?.buckets ?? [])
+    .map((b) => Number((String(b.label).match(/\d{4}/g) ?? []).pop()))
+    .filter(Number.isFinite);
+  const picked = [...new Set([bucketYears[0], bucketYears[Math.floor(bucketYears.length / 2)], bucketYears[bucketYears.length - 1]])]
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  const years = picked.length >= 3 ? picked : [1939, 1979, 2024];
+  const checkpoints = years.map((afterYear, i) => ({
+    afterYear,
+    text: p(`The housing record through ${afterYear}, part ${i + 1}.`),
+  }));
+
+  const names = (view.addressContext?.amenities?.namedExamples ?? [])
+    .map((e) => e?.name)
+    .filter(Boolean);
+  const paragraphs = [
+    {
+      text: p(
+        names[0]
+          ? `Within a fifteen-minute walk, the record holds features, among them ${names[0]}.`
+          : 'Within a fifteen-minute walk, the record holds features.',
+      ),
+      pins: names.slice(0, 1),
+    },
+    { text: p('The rest of the walkshed stays in the prose, unnamed.'), pins: [] },
+  ];
+
   return {
     placeholder: true,
     note: 'MOCK essay from worker dev mode (no ANTHROPIC_API_KEY).',
     title: `${tract.name} (dev placeholder)`,
     movements: [
       { id: 'arrival', layerRef: 'geography', text: p(`You are standing in ${tract.name}.`) },
-      { id: 'built', layerRef: 'yearBuilt', text: p('The housing record, decade by decade.') },
+      {
+        id: 'built',
+        layerRef: 'yearBuilt',
+        text: checkpoints.map((c) => c.text).join(' '),
+        checkpoints,
+      },
       { id: 'home', layerRef: 'core', text: p(`The record finds ${core?.tenure?.totalOccupied ?? 'some'} households here.`) },
-      { id: 'walking', layerRef: 'amenities', text: p('Within a fifteen-minute walk, the record holds features.') },
+      {
+        id: 'walking',
+        layerRef: 'amenities',
+        text: paragraphs.map((q) => q.text).join(' '),
+        paragraphs,
+      },
     ],
   };
 }
